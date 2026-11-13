@@ -1,30 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:mediahubs/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Home presents MediaHub and cloud setup status', (tester) async {
+    await tester.pumpWidget(const MediaHubApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('MediaHub'), findsOneWidget);
+    expect(find.text('Open Library'), findsOneWidget);
+    expect(find.text('Cloud library not configured'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('Library lists bundled tracks and explains missing video', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MediaHubApp());
+    await tester.tap(find.text('Open Library'));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Lemon Tang'), findsOneWidget);
+    expect(find.text('Open asset video player'), findsOneWidget);
+    expect(find.text('Play network audio'), findsOneWidget);
   });
 }
