@@ -1,0 +1,35 @@
+# MediaHub Progress
+
+## Completed in this implementation phase
+- Kept the existing Flutter Android project and Android application ID `com.mediahubs.uts0035`.
+- Reorganized `lib/` by feature: `main.dart` contains the entry point, app shell, and navigation; separate `home/`, `search/`, `library/`, `media/`, and `player/` directories hold their screens and related code. Removed the redundant `app.dart` at the user's request.
+- Set the Flutter package name and Android display label to `mediahub` / `MediaHub`.
+- Added the supplied MediaHub logo to the Home screen and completed Home → Library → Media Detail → Audio Player navigation for bundled tracks.
+- Added an Add/Edit metadata form with title, creator, media/source type, URL/path validation; Save is deliberately disabled pending approved Firestore setup.
+- Added direct HTTPS audio URL entry with `just_audio`, plus playback loading/error, progress, seeking, and controller disposal.
+- Added the bundled asset video player flow with loading/error states, progress/seek controls, and controller disposal.
+- Added Firebase startup initialization with a visible status and a Firestore metadata model. A repository is deferred until the collection path and security model are approved.
+- Kept `lib/media/` compact by placing the reusable media card alongside the demo catalogue and deferring the unused repository file.
+- Preserved the supplied media files and Android/Firebase configuration; updated catalogue paths to match renamed MP3 files and the existing MP4. Did not modify or configure iOS.
+
+## Current
+- Android debug APK built and installed on SM A226B (Android 13). Library appeared and a bundled audio asset displayed playback progress and a pause control.
+- Firestore CRUD, network audio, and offline video acceptance remain incomplete.
+
+## Blockers / deferred dependencies
+- Firestore CRUD requires user verification of Firestore Data, Security Rules, Authentication, and approval of the collection/document path. A concrete repository and CRUD UI remain gated by that decision.
+- One MP4 exists under `assets/video/` and is referenced by the catalogue; offline video playback has not been checked.
+- The supplied MP3/MP4 files' redistribution rights have not been checked. Do not distribute without confirmation.
+- Default `flutter build apk --debug` failed because Kotlin incremental cache files span `C:` and `D:`; `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" --no-daemon --quiet` succeeded instead.
+
+## Next
+1. Continue implementation of non-cloud UI and project setup without running tests.
+2. User provides or approves Firebase Console schema/auth/rules details before cloud CRUD is connected.
+3. Confirm media redistribution rights, then test MP4 playback offline on Android.
+4. Verify network audio with a direct legal URL and the Firebase CRUD flow after security approval.
+
+## Tests / verification (14 November 2026)
+- `flutter pub get`: passed. `dart format --output=none --set-exit-if-changed lib test`: passed after formatting.
+- `flutter analyze`: no issues. `flutter test`: 2/2 passed using a temporary `M:` drive mapping to avoid the apostrophe in the real project path.
+- `flutter build apk --debug`: failed due to cross-drive Kotlin incremental caches. Gradle debug build with `-Pkotlin.incremental=false`: passed; APK `build/app/outputs/flutter-apk/app-debug.apk` installed and launched via Android SDK `adb` on SM A226B.
+- Library screenshot and asset audio progress/pause were observed. Video, network audio, and live Firestore were not validated.
