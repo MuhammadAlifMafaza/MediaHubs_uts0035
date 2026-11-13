@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "244687132106",
+    "project_id": "mediahubs-bbf06",
+    "storage_bucket": "mediahubs-bbf06.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244687132106:android:bcf329d5b370d5286a2b33",
+        "android_client_info": {
+          "package_name": "com.mediahubs.uts0035"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLy-dTUV-Fli6Fyto7w6CHN9bdM5o9Is4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
