@@ -5,8 +5,29 @@
 - Flutter 3.47.7, Dart 3.13.5
 - Android SDK 36.0.0, Java 21
 - SM A226B, Android 13 (API 33), device ID `R9CT4004VJE` connected on 14 November 2026.
+- Current `flutter doctor -v`: Android toolchain healthy; Android device not connected in this phase. Windows Visual Studio unavailable (irrelevant to Android-only build). `flutter --version`: Flutter 3.47.7 / Dart 3.13.5.
 
 ## Automated checks
+
+### Latest run attempt (14 November 2026)
+
+- `pubspec.yaml` currently says `sdk: flutter`; previous `flutter+` error is not present in the inspected file.
+- `flutter run --release -d R9CT4004VJE --no-resident`: **Fail before install**, Kotlin incremental cache error due to `C:` Pub cache vs `D:` project.
+- Release Gradle retry with `-Pkotlin.incremental=false`: **Fail**, Java daemon crashed from insufficient native memory (`android/hs_err_pid21228.log`, `-Xmx8G`). Retry with 2 GB heap / 2 workers: same insufficient-memory crash (`android/hs_err_pid22236.log`). The later `-Pshrink=false` retry was interrupted, so it has no result.
+- `flutter test` through `subst M:`: **Timeout after 180 seconds with no test output**. Subsequent `flutter devices` and `flutter --version` also timed out; `adb devices -l` still detected SM A226B. No new test result should be inferred from the previous 7/7 run.
+- Both logo PNGs briefly appeared deleted during inspection, then reappeared in the working tree without being restored by this agent. No APK was installed or launched in this attempt.
+
+### Current implementation (14 November 2026; no device run)
+
+- `flutter pub get`: Pass, including `font_awesome_flutter` 11.0.0 and `url_launcher` 6.3.x; `youtube_player_flutter` 10.0.1 was already present.
+- `dart format lib test` followed by `dart format --output=none --set-exit-if-changed lib test`: Pass; 0 changes in the final check.
+- `flutter analyze`: Pass, no issues after code changes.
+- `flutter test` through temporary `subst M:` path (apostrophe workaround): Pass, 7/7 tests (Home, Library, Profile, Cloud gate, invalid YouTube URL, URL parsing cases).
+- `flutter build apk --debug --split-per-abi` with environment attempt to disable incremental Kotlin: Fail, cross-drive Kotlin incremental cache errors.
+- `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" "-Psplit-per-abi=true" --no-daemon --quiet` from `android/`: Pass after the Profile brand icon change. Three APKs under `build/app/outputs/flutter-apk/`: `app-arm64-v8a-debug.apk`, `app-armeabi-v7a-debug.apk`, `app-x86_64-debug.apk`. APK contents inspection confirmed arm64 native library, profile JPEG, logo assets and launcher PNGs in the arm64 APK.
+- **No app installation, launch, screenshots or device media tests were performed in this phase**, per user instruction. Build success alone is not a runtime pass.
+
+### Previous device-validation session (historical; not the current build)
 
 On 14 November 2026, after explicit user request:
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'media_item.dart';
+import 'media_catalog.dart';
 
 class MediaFormScreen extends StatefulWidget {
   const MediaFormScreen({super.key, this.initialItem, this.onSave});
@@ -56,8 +57,10 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
       if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
         return 'Enter a valid HTTPS media URL.';
       }
-    } else if (!locator.startsWith('assets/') || locator.contains(' ')) {
-      return 'Enter a registered asset path starting with assets/.';
+    } else if (!demoMediaItems.any(
+      (item) => item.mediaUrl == locator && item.type == _type,
+    )) {
+      return 'Select a bundled asset path matching the media type.';
     }
     return null;
   }
@@ -162,6 +165,32 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
                       if (value != null) setState(() => _sourceType = value);
                     },
             ),
+            if (_sourceType == MediaSourceType.asset)
+              DropdownButtonFormField<String>(
+                initialValue:
+                    demoMediaItems.any(
+                      (item) =>
+                          item.mediaUrl == _locatorController.text &&
+                          item.type == _type,
+                    )
+                    ? _locatorController.text
+                    : null,
+                decoration: const InputDecoration(labelText: 'Bundled asset'),
+                items: demoMediaItems
+                    .where((item) => item.type == _type)
+                    .map(
+                      (item) => DropdownMenuItem(
+                        value: item.mediaUrl,
+                        child: Text(item.title),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _locatorController.text = value);
+                  }
+                },
+              ),
             TextFormField(
               controller: _locatorController,
               keyboardType: _sourceType == MediaSourceType.network

@@ -16,15 +16,15 @@ flutter pub get
 flutter run -d <android-device-id>
 ```
 
-Build a debug APK with `flutter build apk --debug`. On this Windows setup, Gradle's incremental Kotlin cache can fail across the `C:` dependency cache and `D:` project drives. The verified local workaround is `cd android` then `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" --no-daemon`. The APK is written to `build/app/outputs/flutter-apk/app-debug.apk` from the project root. The app identity is `com.mediahubs.uts0035`; Android Firebase configuration is expected at `android/app/google-services.json`.
+Build per-ABI debug APKs with `flutter build apk --debug --split-per-abi`. On this Windows setup, Flutter's invocation fails in the Kotlin incremental cache across `C:` and `D:` drives. Verified workaround from `android/`: `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" "-Psplit-per-abi=true" --no-daemon --quiet`. Outputs from project root: `build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk`, `app-armeabi-v7a-debug.apk`, and `app-x86_64-debug.apk`. The app ID is `com.mediahubs.uts0035`.
 
 ## Current demo
 
-The app has separate Home, Search, and Library menu screens. Search filters the bundled catalogue; each item opens a detail screen and asset player. The Add/Edit form validates metadata but keeps saving disabled until Firestore is approved. The library also accepts a direct HTTPS audio URL for network playback. Firebase initialization is attempted at app startup and its result is displayed. The catalogue references the MP3 and MP4 files currently present in `assets/`; confirm you have permission to redistribute them. The video is not yet device-tested.
+The app has Home, Search, Library, and Profile menus. Profile shows the supplied photo and creator information with GitHub, Instagram and LinkedIn links. Launcher icon, Android launch splash and Firebase-loading screen use the MediaHub logo. Library contains bundled media, direct HTTPS audio entry, a dedicated YouTube URL/player route and a Cloud Library setup screen. Search filters bundled items. Add/Edit metadata validation exists but saving is disabled until Firestore is approved. YouTube playback and the new UI have **not** been tested on a device. Confirm rights to redistribute the bundled MP3/MP4 files before distributing any APK.
 
 ## Firebase setup gate
 
-In Firebase Console, verify the `mediahubs-bbf06` Android app, Firestore database and location, Authentication providers, current rules, and any existing data. Approve a safe schema/path (prefer user-scoped documents with authenticated access) before implementing CRUD. Do not use unrestricted test rules as a final configuration. Then adapt repository paths and document the approved rules; do not put admin credentials in the app.
+`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database access. In Firebase Console for that project, inspect Firestore **Data** (database/location and existing collections), **Rules** (current published rules), and **Authentication** (enabled sign-in providers). Send those three statuses/screenshots and approve an access strategy and exact collection path. A proposed strategy is Anonymous Authentication + `users/{uid}/media/{mediaId}` with rules restricting each user to their own UID; this is **not** enabled or deployed. Only then implement matching repository, authentication, Firestore read/write and CRUD UI. Never use open test rules as final security; never add admin credentials to the app.
 
 ## UTS demo checklist
 
@@ -32,6 +32,7 @@ In Firebase Console, verify the `mediahubs-bbf06` Android app, Firestore databas
 - [ ] Test network audio using a direct, accessible audio URL.
 - [ ] Confirm rights for the supplied MP4 and test playback offline on Android.
 - [ ] Run the black-box cases listed in `docs/TESTING.md` on a real Android device/emulator and record evidence.
+- [ ] Validate YouTube playback, external Profile links, splash and new menu screens on Android after permission to run the app is granted.
 
 See `docs/IMPLEMENTATION.md` and `PROGRESS.md` for verified scope and blockers.
 

@@ -21,9 +21,7 @@ void main() {
     expect(find.text('Cloud library not configured'), findsOneWidget);
   });
 
-  testWidgets('Library lists bundled tracks and video', (
-    tester,
-  ) async {
+  testWidgets('Library lists bundled tracks and video', (tester) async {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
@@ -41,5 +39,64 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('RUDE! MV'), findsOneWidget);
+  });
+
+  testWidgets('Profile contains creator details', (tester) async {
+    await tester.pumpWidget(
+      MediaHubApp(
+        firebaseInitialization: Future.value('Firebase test status.'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Muhammad Alif Mafaza'), findsOneWidget);
+    expect(find.text('23.230.0035'), findsOneWidget);
+    expect(find.text('Sistem Informasi (Bisnis Digital)'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byTooltip('GitHub'),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.byTooltip('GitHub'), findsOneWidget);
+    expect(find.byTooltip('Instagram'), findsOneWidget);
+    expect(find.byTooltip('LinkedIn'), findsOneWidget);
+  });
+
+  testWidgets('Cloud Library shows setup gate without Firestore access', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MediaHubApp(
+        firebaseInitialization: Future.value('Firebase test status.'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cloud Library'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cloud catalogue is not connected yet'), findsOneWidget);
+    expect(find.text('Firebase setup required'), findsOneWidget);
+  });
+
+  testWidgets('YouTube entry rejects a non-YouTube URL', (tester) async {
+    await tester.pumpWidget(
+      MediaHubApp(
+        firebaseInitialization: Future.value('Firebase test status.'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Play YouTube video'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(EditableText),
+      'https://example.com/sample.mp4',
+    );
+    await tester.tap(find.text('Open player'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter a valid HTTPS YouTube video URL.'), findsOneWidget);
   });
 }

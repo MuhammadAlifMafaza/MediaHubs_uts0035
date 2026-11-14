@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'home/home_screen.dart';
 import 'library/library_screen.dart';
+import 'profile/profile_screen.dart';
 import 'search/search_screen.dart';
 
 void main() => runApp(const MediaHubApp());
@@ -55,7 +56,21 @@ class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
     future: _initialization,
     builder: (context, snapshot) {
       if (!snapshot.hasData) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image(
+                  image: AssetImage('assets/images/logo/logo.png'),
+                  width: 180,
+                ),
+                SizedBox(height: 24),
+                CircularProgressIndicator(),
+              ],
+            ),
+          ),
+        );
       }
       return _MainNavigation(firebaseStatus: snapshot.data!);
     },
@@ -83,6 +98,7 @@ class _MainNavigationState extends State<_MainNavigation> {
       ),
       const SearchScreen(),
       const LibraryScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -102,6 +118,11 @@ class _MainNavigationState extends State<_MainNavigation> {
             icon: Icon(Icons.video_library_outlined),
             selectedIcon: Icon(Icons.video_library),
             label: 'Library',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),

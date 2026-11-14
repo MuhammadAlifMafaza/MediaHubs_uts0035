@@ -16,6 +16,8 @@ dependencies:
   just_audio:
   video_player:
   youtube_player_flutter:
+  url_launcher: ^6.3.2
+  font_awesome_flutter: ^11.0.0
 
 
 dev_dependencies:

@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: onOpenLibrary,
           ),
-        ),
+        ),      
         const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: onOpenLibrary,
