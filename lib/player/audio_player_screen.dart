@@ -4,16 +4,9 @@ import 'package:just_audio/just_audio.dart';
 import '../media/media_item.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
-  const AudioPlayerScreen({
-    super.key,
-    this.item,
-    this.networkUrl,
-    this.networkTitle,
-  }) : assert(item != null || networkUrl != null);
+  const AudioPlayerScreen({super.key, required this.item});
 
-  final MediaItem? item;
-  final String? networkUrl;
-  final String? networkTitle;
+  final MediaItem item;
 
   @override
   State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
@@ -33,14 +26,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Future<void> _loadMedia() async {
     if (mounted) setState(() => _error = null);
     try {
-      final item = widget.item;
-      final networkUrl = widget.networkUrl;
-      if (networkUrl != null) {
-        await _player.setUrl(networkUrl);
-      } else if (item?.sourceType == MediaSourceType.network) {
-        await _player.setUrl(item!.mediaUrl);
-      } else if (item != null) {
-        await _player.setAsset(item.mediaUrl);
+      if (widget.item.sourceType == MediaSourceType.network ||
+          widget.item.sourceType == MediaSourceType.device) {
+        await _player.setUrl(widget.item.mediaUrl);
+      } else {
+        await _player.setAsset(widget.item.mediaUrl);
       }
     } catch (error) {
       if (mounted) setState(() => _error = 'Unable to load audio: $error');
@@ -75,10 +65,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.item?.title ?? widget.networkTitle ?? 'Network audio';
-    final sourceLabel =
-        widget.networkUrl != null ||
-            widget.item?.sourceType == MediaSourceType.network
+    final title = widget.item.title;
+    final sourceLabel = widget.item.sourceType == MediaSourceType.device
+        ? 'On this device'
+        : widget.item.sourceType == MediaSourceType.network
         ? 'Network audio'
         : 'Available offline';
 
@@ -117,11 +107,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
               maxLines: 2,
             ),
-            if (widget.item != null)
-              Text(
-                widget.item!.creator,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+            Text(
+              widget.item.creator,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(sourceLabel),
             const SizedBox(height: 28),
@@ -208,87 +197,4 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       ),
     );
   }
-}
-
-class NetworkAudioForm extends StatefulWidget {
-  const NetworkAudioForm({super.key});
-
-  @override
-  State<NetworkAudioForm> createState() => _NetworkAudioFormState();
-}
-
-class _NetworkAudioFormState extends State<NetworkAudioForm> {
-  final _controller = TextEditingController();
-  final _titleController = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _titleController.dispose();
-    super.dispose();
-  }
-
-  void _play() {
-    final uri = Uri.tryParse(_controller.text.trim());
-    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-      setState(
-        () => _error = 'Enter a valid HTTPS URL for a direct audio stream.',
-      );
-      return;
-    }
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AudioPlayerScreen(
-          networkUrl: uri.toString(),
-          networkTitle: _titleController.text.trim().isEmpty
-              ? null
-              : _titleController.text.trim(),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Network audio')),
-    body: ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Card(
-          child: ListTile(
-            leading: Icon(Icons.music_note),
-            title: Text('Example: Hearts2Hearts - Moonride'),
-            subtitle: Text(
-              'Supply your own licensed direct HTTPS audio URL. '
-              'A YouTube or music page URL cannot be played as an audio stream.',
-            ),
-          ),
-        ),
-        TextField(
-          controller: _titleController,
-          decoration: const InputDecoration(
-            labelText: 'Track title (optional)',
-            hintText: 'Hearts2Hearts - Moonride',
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _controller,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            labelText: 'Direct audio URL',
-            hintText: 'https://your-domain.example/moonride.mp3',
-            errorText: _error,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: _play,
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('Play'),
-        ),
-      ],
-    ),
-  );
 }

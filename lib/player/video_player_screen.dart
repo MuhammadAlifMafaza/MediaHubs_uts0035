@@ -52,9 +52,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       _error = null;
     });
     try {
-      final controller = widget.sourceType == MediaSourceType.asset
-          ? VideoPlayerController.asset(widget.mediaUrl)
-          : VideoPlayerController.networkUrl(Uri.parse(widget.mediaUrl));
+      final controller = switch (widget.sourceType) {
+        MediaSourceType.asset => VideoPlayerController.asset(widget.mediaUrl),
+        MediaSourceType.device => VideoPlayerController.contentUri(
+          Uri.parse(widget.mediaUrl),
+        ),
+        MediaSourceType.network => VideoPlayerController.networkUrl(
+          Uri.parse(widget.mediaUrl),
+        ),
+      };
       _controller = controller;
       await controller.initialize();
       if (!mounted || loadId != _loadId) return;
@@ -64,8 +70,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (mounted && loadId == _loadId) {
         setState(() {
           _loading = false;
-          _error =
-              'Could not open ${widget.sourceType == MediaSourceType.asset ? 'bundled' : 'network'} video: $error';
+          _error = 'Could not open ${widget.sourceType.name} video: $error';
         });
       }
     }
@@ -241,11 +246,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               if (widget.creator.isNotEmpty) Text(widget.creator),
               const SizedBox(height: 8),
               Chip(
-                label: Text(
-                  widget.sourceType == MediaSourceType.asset
-                      ? 'Available offline'
-                      : 'Network video',
-                ),
+                label: Text(switch (widget.sourceType) {
+                  MediaSourceType.asset => 'Bundled video',
+                  MediaSourceType.device => 'On this device',
+                  MediaSourceType.network => 'Network video',
+                }),
               ),
             ],
           ],

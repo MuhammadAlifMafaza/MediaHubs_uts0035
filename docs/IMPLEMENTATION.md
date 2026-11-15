@@ -2,6 +2,8 @@
 
 ## Current structure
 
+- Current unverified phase: `photo_manager` 3.12.0 scans Android MediaStore for audio/video after per-type permission; device IDs are resolved to `content://` URIs only when tapped. `video_player` 2.14.1 uses `VideoPlayerController.contentUri` for device videos; `just_audio` uses device URI for audio. The original Unicode MP4 filename is present in the repository and referenced by the catalogue. The manual network audio URL form is removed but the network playback branch remains. **No new APK/device playback has been validated for this phase** because Flutter CLI and Gradle's Flutter bundling task timed out; details in `docs/TESTING.md`.
+
 - `lib/main.dart`: app entry point, dark blue/green Material 3 theme, logo during Firebase bootstrap, and Home/Audio/Video/Library/Profile navigation.
 - `lib/home/`, `lib/audio/`, `lib/video/`, `lib/search/`, `lib/library/`, `lib/profile/`: separate screens; Search opens from app bars; Library shows the cloud security/setup gate and Add/Edit form, not the combined bundled media list.
 - `lib/media/`: metadata model/catalog, direct-to-player card/navigation (with Details in overflow), detail/form screens and an unbound `MediaRepository` contract with **no Firestore operations**.

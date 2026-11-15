@@ -152,6 +152,7 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
               initialValue: _sourceType,
               decoration: const InputDecoration(labelText: 'Source *'),
               items: MediaSourceType.values
+                  .where((source) => source != MediaSourceType.device)
                   .map(
                     (source) => DropdownMenuItem(
                       value: source,

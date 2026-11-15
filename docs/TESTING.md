@@ -9,6 +9,33 @@
 
 ## Automated checks
 
+### Release split build and connected-device run (15 November 2026, late night)
+
+| Check | Actual result | Limit |
+|---|---|---|
+| `adb devices -l` | SM A226B `R9CT4004VJE` detected | ADB connection works; this is not an app launch. |
+| `flutter --version` | Timed out without output | Flutter CLI still unresponsive after the prior process cleanup. |
+| `flutter build apk --release --split-per-abi` | Timed out without output | No release APK was generated under `build/app/outputs/`. |
+| `flutter run --release -d R9CT4004VJE --no-resident` | Timed out without output | Did not install/launch the new project build. An existing older package was already installed on the device, but no app process was observed in the `pidof` check; do not treat it as this revision. |
+| `./gradlew.bat :app:assembleRelease "-Psplit-per-abi=true" --max-workers=1 --no-daemon --quiet` | Timed out | Thread dump showed `BaseFlutterTaskHelper.buildBundle` waiting for a Flutter subprocess; no release APK was generated. |
+
+Only older debug APKs (17:59) exist; none incorporates the current device-media and Unicode video-path changes. Release signing in `android/app/build.gradle.kts` currently uses the debug signing config. No video/audio runtime success is claimed. The attempted Gradle build updated the tracked generated report at `android/build/reports/problems/problems-report.html`; no source code was changed during this release test.
+
+### Device media and video asset path (15 November 2026, night)
+
+| Check | Result | Detail |
+|---|---|---|
+| Git state at start | Clean | Original Unicode MP4 existed; catalogue incorrectly referenced a missing ASCII path. |
+| `photo_manager` dependency | Resolved | 3.12.0 installed in Pub cache, `pubspec.lock` and `.dart_tool/package_config.json`; `dart pub get` timed out before returning a success exit code. |
+| Standalone Dart formatter and analyzer | Pass | 22 Dart files analyzed; 0 diagnostics after changes, formatter applied. CLI `dart format` itself timed out. |
+| `flutter test` via temporary `subst M:` | Timeout | No new test pass for this phase. Earlier 8/8 result is historical. |
+| Gradle `:app:assembleDebug -Psplit-per-abi=true --max-workers=1 --no-daemon --quiet` | Timeout | Java thread dump showed Gradle waiting in `BaseFlutterTaskHelper.buildBundle` for the Flutter process; three APK timestamps remain 17:59 (previous revision). |
+| `flutter --version` / `flutter devices` | Timeout | Flutter CLI unresponsive in this phase. `adb devices -l` independently detected SM A226B (`R9CT4004VJE`). Even after the user authorized stopping all Dart/Flutter processes and they were stopped, Flutter CLI still timed out. |
+| `flutter run -d R9CT4004VJE --debug --no-resident` | Timeout | User explicitly authorized running the project in this phase, but Flutter returned no output before timeout. No new APK was installed/launched by this command. |
+| New APK install / video and device audio playback | Not Run | No freshly built APK exists for these code changes. Do not treat previous APKs as proof of video/MediaStore playback. |
+
+Firebase Console Data/Rules/Storage and permission for no-login cloud access have not been verified. Cloud repository and remote writes remain gated; no URL to an actual Storage audio file has been supplied.
+
 ### Build repair (15 November 2026, evening; no app run)
 
 | Check | Result | Detail |

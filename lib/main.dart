@@ -4,15 +4,17 @@ import 'package:flutter/material.dart';
 import 'home/home_screen.dart';
 import 'audio/audio_screen.dart';
 import 'library/library_screen.dart';
+import 'media/device_media_repository.dart';
 import 'profile/profile_screen.dart';
 import 'video/video_screen.dart';
 
 void main() => runApp(const MediaHubApp());
 
 class MediaHubApp extends StatelessWidget {
-  const MediaHubApp({super.key, this.firebaseInitialization});
+  const MediaHubApp({super.key, this.firebaseInitialization, this.deviceMedia});
 
   final Future<String>? firebaseInitialization;
+  final DeviceMediaRepository? deviceMedia;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -30,14 +32,21 @@ class MediaHubApp extends StatelessWidget {
       ),
       useMaterial3: true,
     ),
-    home: _FirebaseBootstrapScreen(initialization: firebaseInitialization),
+    home: _FirebaseBootstrapScreen(
+      initialization: firebaseInitialization,
+      deviceMedia: deviceMedia ?? const PhotoManagerDeviceMediaRepository(),
+    ),
   );
 }
 
 class _FirebaseBootstrapScreen extends StatefulWidget {
-  const _FirebaseBootstrapScreen({this.initialization});
+  const _FirebaseBootstrapScreen({
+    this.initialization,
+    required this.deviceMedia,
+  });
 
   final Future<String>? initialization;
+  final DeviceMediaRepository deviceMedia;
 
   @override
   State<_FirebaseBootstrapScreen> createState() =>
@@ -78,15 +87,22 @@ class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
           ),
         );
       }
-      return _MainNavigation(firebaseStatus: snapshot.data!);
+      return _MainNavigation(
+        firebaseStatus: snapshot.data!,
+        deviceMedia: widget.deviceMedia,
+      );
     },
   );
 }
 
 class _MainNavigation extends StatefulWidget {
-  const _MainNavigation({required this.firebaseStatus});
+  const _MainNavigation({
+    required this.firebaseStatus,
+    required this.deviceMedia,
+  });
 
   final String firebaseStatus;
+  final DeviceMediaRepository deviceMedia;
 
   @override
   State<_MainNavigation> createState() => _MainNavigationState();
@@ -104,8 +120,14 @@ class _MainNavigationState extends State<_MainNavigation> {
         onOpenAudio: () => setState(() => _selectedIndex = 1),
         onOpenVideo: () => setState(() => _selectedIndex = 2),
       ),
-      const AudioScreen(),
-      const VideoScreen(),
+      AudioScreen(
+        deviceMedia: widget.deviceMedia,
+        scanDevice: _selectedIndex == 1,
+      ),
+      VideoScreen(
+        deviceMedia: widget.deviceMedia,
+        scanDevice: _selectedIndex == 2,
+      ),
       const LibraryScreen(),
       const ProfileScreen(),
     ];

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../player/audio_player_screen.dart';
-import '../player/video_player_screen.dart';
+import 'media_navigation.dart';
 import 'media_item.dart';
 
 class MediaDetailScreen extends StatelessWidget {
@@ -10,15 +9,7 @@ class MediaDetailScreen extends StatelessWidget {
   final MediaItem item;
 
   void _play(BuildContext context) {
-    final route = item.type == MediaType.audio
-        ? AudioPlayerScreen(item: item)
-        : VideoPlayerScreen(
-            sourceType: item.sourceType,
-            mediaUrl: item.mediaUrl,
-            title: item.title,
-            creator: item.creator,
-          );
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => route));
+    openMediaPlayer(context, item);
   }
 
   @override
@@ -48,7 +39,8 @@ class MediaDetailScreen extends StatelessWidget {
         if (item.category.isNotEmpty)
           _DetailRow(label: 'Category', value: item.category),
         _DetailRow(label: 'Source', value: item.sourceType.name),
-        _DetailRow(label: 'Media URL/path', value: item.mediaUrl),
+        if (item.sourceType != MediaSourceType.device)
+          _DetailRow(label: 'Media URL/path', value: item.mediaUrl),
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: () => _play(context),

@@ -1,15 +1,36 @@
-import 'package:flutter/widgets.dart';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mediahub/main.dart';
 import 'package:mediahub/player/youtube_player_screen.dart';
 import 'package:mediahub/media/media_catalog.dart';
 import 'package:mediahub/media/media_item.dart';
+import 'package:mediahub/media/device_media_repository.dart';
+import 'package:mediahub/media/device_media_section.dart';
+
+class _EmptyDeviceMediaRepository implements DeviceMediaRepository {
+  const _EmptyDeviceMediaRepository();
+
+  @override
+  Future<DeviceMediaResult> load(MediaType type) async =>
+      const DeviceMediaResult(items: []);
+}
+
+class _DeniedDeviceMediaRepository implements DeviceMediaRepository {
+  const _DeniedDeviceMediaRepository();
+
+  @override
+  Future<DeviceMediaResult> load(MediaType type) async =>
+      const DeviceMediaResult(items: [], permissionDenied: true);
+}
 
 void main() {
   testWidgets('Home presents MediaHub and cloud setup status', (tester) async {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
+        deviceMedia: const _EmptyDeviceMediaRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -33,6 +54,7 @@ void main() {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
+        deviceMedia: const _EmptyDeviceMediaRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -40,7 +62,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Lemon Tang'), findsOneWidget);
-    expect(find.text('Network audio'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('On this device'),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('On this device'), findsOneWidget);
+    expect(find.text('Network audio'), findsNothing);
     await tester.tap(find.text('Video'));
     await tester.pumpAndSettle();
     expect(find.text('RUDE! MV'), findsOneWidget);
@@ -51,6 +79,7 @@ void main() {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
+        deviceMedia: const _EmptyDeviceMediaRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -75,6 +104,7 @@ void main() {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
+        deviceMedia: const _EmptyDeviceMediaRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -90,6 +120,7 @@ void main() {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
+        deviceMedia: const _EmptyDeviceMediaRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -110,10 +141,26 @@ void main() {
     expect(find.text('Enter a valid HTTPS YouTube video URL.'), findsOneWidget);
   });
 
-  test('Bundled video catalogue references an actual ASCII asset', () {
+  testWidgets('Denied device media access is explained', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: DeviceMediaSection(
+            type: MediaType.audio,
+            repository: _DeniedDeviceMediaRepository(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Media access not granted'), findsOneWidget);
+  });
+
+  test('Bundled video catalogue references its original Unicode asset', () {
     final video = demoMediaItems.singleWhere(
       (item) => item.type == MediaType.video,
     );
-    expect(video.mediaUrl, 'assets/video/rude_mv.mp4');
+    expect(video.mediaUrl, "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4");
+    expect(File(video.mediaUrl).existsSync(), isTrue);
   });
 }

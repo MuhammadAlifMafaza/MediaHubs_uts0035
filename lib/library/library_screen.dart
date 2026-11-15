@@ -7,8 +7,9 @@ class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
 
   void _openAddMediaForm(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => const MediaFormScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const MediaFormScreen()));
   }
 
   @override

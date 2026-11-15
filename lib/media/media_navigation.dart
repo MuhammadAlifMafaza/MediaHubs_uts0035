@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import '../player/audio_player_screen.dart';
 import '../player/video_player_screen.dart';
@@ -23,7 +24,11 @@ class PlayableMediaCard extends StatelessWidget {
       ),
       title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
-        '${item.creator} · ${item.sourceType == MediaSourceType.asset ? 'Offline' : 'Network'}',
+        '${item.creator} · ${switch (item.sourceType) {
+          MediaSourceType.asset => 'Bundled',
+          MediaSourceType.device => 'Device',
+          MediaSourceType.network => 'Online',
+        }}',
       ),
       onTap: () => openMediaPlayer(context, item),
       trailing: PopupMenuButton<String>(
@@ -41,16 +46,44 @@ class PlayableMediaCard extends StatelessWidget {
   );
 }
 
-void openMediaPlayer(BuildContext context, MediaItem item) {
+Future<void> openMediaPlayer(BuildContext context, MediaItem item) async {
+  var playableItem = item;
+  if (item.sourceType == MediaSourceType.device) {
+    try {
+      final entity = await AssetEntity.fromId(item.mediaUrl);
+      final uri = await entity?.getMediaUrl();
+      if (uri == null || uri.isEmpty) {
+        throw StateError(
+          'The file is no longer available or media access was revoked.',
+        );
+      }
+      playableItem = MediaItem(
+        id: item.id,
+        title: item.title,
+        creator: item.creator,
+        type: item.type,
+        sourceType: item.sourceType,
+        mediaUrl: uri,
+      );
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open device media: $error')),
+        );
+      }
+      return;
+    }
+  }
+  if (!context.mounted) return;
   Navigator.of(context).push(
     MaterialPageRoute<void>(
-      builder: (_) => item.type == MediaType.audio
-          ? AudioPlayerScreen(item: item)
+      builder: (_) => playableItem.type == MediaType.audio
+          ? AudioPlayerScreen(item: playableItem)
           : VideoPlayerScreen(
-              sourceType: item.sourceType,
-              mediaUrl: item.mediaUrl,
-              title: item.title,
-              creator: item.creator,
+              sourceType: playableItem.sourceType,
+              mediaUrl: playableItem.mediaUrl,
+              title: playableItem.title,
+              creator: playableItem.creator,
             ),
     ),
   );

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum MediaType { audio, video }
 
-enum MediaSourceType { network, asset }
+enum MediaSourceType { network, asset, device }
 
 class MediaItem {
   const MediaItem({

@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../media/media_catalog.dart';
+import '../media/device_media_repository.dart';
+import '../media/device_media_section.dart';
 import '../media/media_item.dart';
 import '../media/media_navigation.dart';
 import '../player/youtube_player_screen.dart';
 import '../search/search_screen.dart';
 
 class VideoScreen extends StatelessWidget {
-  const VideoScreen({super.key});
+  const VideoScreen({
+    super.key,
+    required this.deviceMedia,
+    this.scanDevice = true,
+  });
+
+  final DeviceMediaRepository deviceMedia;
+  final bool scanDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +47,9 @@ class VideoScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           for (final item in videos) PlayableMediaCard(item: item),
+          const SizedBox(height: 20),
+          if (scanDevice)
+            DeviceMediaSection(type: MediaType.video, repository: deviceMedia),
           const SizedBox(height: 20),
           Text(
             'YouTube · online',
