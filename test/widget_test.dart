@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mediahub/main.dart';
+import 'package:mediahub/player/youtube_player_screen.dart';
+import 'package:mediahub/media/media_catalog.dart';
+import 'package:mediahub/media/media_item.dart';
 
 void main() {
   testWidgets('Home presents MediaHub and cloud setup status', (tester) async {
@@ -12,6 +15,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('MediaHub'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Open Library'),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Open Library'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Cloud library not configured'),
@@ -21,24 +29,22 @@ void main() {
     expect(find.text('Cloud library not configured'), findsOneWidget);
   });
 
-  testWidgets('Library lists bundled tracks and video', (tester) async {
+  testWidgets('Audio and Video have separate destinations', (tester) async {
     await tester.pumpWidget(
       MediaHubApp(
         firebaseInitialization: Future.value('Firebase test status.'),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Open Library'));
+    await tester.tap(find.text('Audio'));
     await tester.pumpAndSettle();
 
     expect(find.text('Lemon Tang'), findsOneWidget);
-    expect(find.text('Play network audio'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('RUDE! MV'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
+    expect(find.text('Network audio'), findsOneWidget);
+    await tester.tap(find.text('Video'));
+    await tester.pumpAndSettle();
     expect(find.text('RUDE! MV'), findsOneWidget);
+    expect(find.text('Featured YouTube video'), findsOneWidget);
   });
 
   testWidgets('Profile contains creator details', (tester) async {
@@ -87,10 +93,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Library'));
+    await tester.tap(find.text('Video'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Play YouTube video'));
+    await tester.tap(find.text('Use another YouTube URL'));
     await tester.pumpAndSettle();
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+      featuredYoutubeUrl,
+    );
     await tester.enterText(
       find.byType(EditableText),
       'https://example.com/sample.mp4',
@@ -98,5 +108,12 @@ void main() {
     await tester.tap(find.text('Open player'));
     await tester.pumpAndSettle();
     expect(find.text('Enter a valid HTTPS YouTube video URL.'), findsOneWidget);
+  });
+
+  test('Bundled video catalogue references an actual ASCII asset', () {
+    final video = demoMediaItems.singleWhere(
+      (item) => item.type == MediaType.video,
+    );
+    expect(video.mediaUrl, 'assets/video/rude_mv.mp4');
   });
 }

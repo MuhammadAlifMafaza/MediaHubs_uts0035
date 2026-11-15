@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../media/media_catalog.dart';
-import '../media/media_detail_screen.dart';
+import '../media/media_navigation.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -63,14 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     itemCount: results.length,
                     itemBuilder: (context, index) {
                       final item = results[index];
-                      return MediaCard(
-                        item: item,
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => MediaDetailScreen(item: item),
-                          ),
-                        ),
-                      );
+                      return PlayableMediaCard(item: item);
                     },
                   ),
           ),

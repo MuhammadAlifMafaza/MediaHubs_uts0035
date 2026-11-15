@@ -16,11 +16,13 @@ flutter pub get
 flutter run -d <android-device-id>
 ```
 
-Build per-ABI debug APKs with `flutter build apk --debug --split-per-abi`. On this Windows setup, Flutter's invocation fails in the Kotlin incremental cache across `C:` and `D:` drives. Verified workaround from `android/`: `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" "-Psplit-per-abi=true" --no-daemon --quiet`. Outputs from project root: `build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk`, `app-armeabi-v7a-debug.apk`, and `app-x86_64-debug.apk`. The app ID is `com.mediahubs.uts0035`.
+Build per-ABI debug APKs with `flutter build apk --debug --split-per-abi` when the CLI is responsive. On this Windows setup, the original Flutter invocation failed in the Kotlin incremental cache across `C:` and `D:` drives; a later retry timed out. Verified workaround from `android/`: `./gradlew.bat :app:assembleDebug "-Psplit-per-abi=true" --max-workers=1 --no-daemon --quiet`. The required non-incremental Kotlin, low-memory JVM and one-worker settings are recorded in `android/gradle.properties`. The successful build used the same settings explicitly on its command line; see `docs/TESTING.md`. Outputs from project root: `build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk`, `app-armeabi-v7a-debug.apk`, and `app-x86_64-debug.apk`. The app ID is `com.mediahubs.uts0035`.
 
 ## Current demo
 
-The app has Home, Search, Library, and Profile menus. Profile shows the supplied photo and creator information with GitHub, Instagram and LinkedIn links. Launcher icon, Android launch splash and Firebase-loading screen use the MediaHub logo. Library contains bundled media, direct HTTPS audio entry, a dedicated YouTube URL/player route and a Cloud Library setup screen. Search filters bundled items. Add/Edit metadata validation exists but saving is disabled until Firestore is approved. YouTube playback and the new UI have **not** been tested on a device. Confirm rights to redistribute the bundled MP3/MP4 files before distributing any APK.
+The app has Home, Audio, Video, Library and Profile navigation; Search is available from the Home/Audio/Video app bars. Tap a local media item to open its player directly; the `⋯` menu opens Details. Audio contains the bundled tracks and a direct HTTPS audio entry; Video contains the offline MP4 and a YouTube entry with an editable URL initially set to `https://youtu.be/chl0R8C4NJ8`. Library is reserved for cloud metadata/setup and the gated Add/Edit form. Profile shows the supplied photo and social links. The MP4 is now named `assets/video/rude_mv.mp4` to avoid special characters in the bundled asset key; error and retry controls help diagnose playback. **Debug APKs have been built, but none has been installed or tested on a device in this phase.** Confirm MP3/MP4 redistribution rights before sharing an APK.
+
+For a network audio example, enter the title `Hearts2Hearts - Moonride` and supply a licensed direct HTTPS MP3/stream URL yourself. A YouTube or music-page URL is **not** a playable direct audio URL; no working Moonride MP3 URL has been verified or prefilled.
 
 ## Firebase setup gate
 

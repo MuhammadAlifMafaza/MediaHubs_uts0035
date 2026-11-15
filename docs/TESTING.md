@@ -9,7 +9,51 @@
 
 ## Automated checks
 
-### Latest run attempt (14 November 2026)
+### Build repair (15 November 2026, evening; no app run)
+
+| Check | Result | Detail |
+|---|---|---|
+| `flutter pub get` | Pass | Dependencies resolved after `flutter clean`. |
+| `dart format lib test` | Pass | Formatted the updated test and one library file; final format check later timed out under system load. |
+| `flutter analyze` | Pass | No issues found. |
+| `flutter test` (temporary `subst M:` drive) | Pass | 8/8 tests after updating two UI assertions; `M:` avoids the apostrophe in the project path. |
+| `flutter build apk --debug --split-per-abi` | Fail | Kotlin incremental cache cannot relativize Pub cache paths on `C:` against project paths on `D:`. After applying build settings, a retry timed out without output; APK timestamps did not change. |
+| Gradle `:app:assembleDebug -Pkotlin.incremental=false -Psplit-per-abi=true` | Pass on third attempt | First retry crashed with 8 GB heap; second crashed signing APK with 2 GB heap due to insufficient system commit. Third run with 1200 MB heap, 512 MB metaspace, one worker, and ForkJoinPool parallelism 1 exited successfully and produced all three APKs on 15 November at 17:59. The successful flags are now in `android/gradle.properties`, except `-Psplit-per-abi=true`. |
+| Android install/launch/playback | Not Run | Explicitly out of scope. APK build does not prove video or network playback. |
+
+APK outputs in `build/app/outputs/flutter-apk/`: `app-arm64-v8a-debug.apk` (158,258,657 bytes), `app-armeabi-v7a-debug.apk` (137,293,903 bytes), `app-x86_64-debug.apk` (144,276,012 bytes). The Gradle invocation was from `android/`: `./gradlew.bat :app:assembleDebug "-Pkotlin.incremental=false" "-Psplit-per-abi=true" "-Dorg.gradle.jvmargs=-Xmx1200m -XX:MaxMetaspaceSize=512m -XX:ReservedCodeCacheSize=192m -Djava.util.concurrent.ForkJoinPool.common.parallelism=1" --max-workers=1 --no-daemon --quiet`.
+
+### Current changes (15 November 2026; build only, no app run)
+
+| Check | Result | Detail |
+|---|---|---|
+| Existing source/assets | Inspected | User reports bundled video displays “Video unavailable”; old player hid the original exception. MP4 existed in release APK and file signatures contain `avc1` and `mp4a`. Neither observation proves device compatibility. |
+| Asset path | Changed, unverified | Tracked MP4 moved to `assets/video/rude_mv.mp4`, catalogue updated; new APK not produced yet. |
+| `dart format lib test` | Timeout | No output/completion; repeated single-file and mapped-drive attempts also timed out. Alternative standalone formatter succeeded (next row). |
+| Standalone `dart_style` formatter via SDK `dart.exe` | Pass | Formatted 7 files; subsequent run: 0 changes. Used SDK package config because the normal `dart format` command remains blocked. |
+| Standalone analyzer via SDK `dart.exe` | Pass | Resolved 20 Dart source/test files, 0 diagnostics after fixing an unused import. This is not a substitute for a successful `flutter analyze` invocation. |
+| `flutter --version` | Timeout | No output during this attempt; Flutter CLI appears blocked by the environment. |
+| Gradle `:app:assembleDebug -Pkotlin.incremental=false -Psplit-per-abi=true` | Timeout | No new APK after 300s; do not mark build as passed. |
+| `flutter analyze`, `flutter test` | Not Run | Flutter CLI remained unresponsive; previous 7/7 is historical. |
+| Android install/launch/playback | Not Run | Explicit instruction: build only; no app run. Video offline and YouTube remain unverified. |
+
+
+### Latest release-device check (14 November 2026)
+
+| Check | Outcome | Evidence / limit |
+|---|---|---|
+| Git worktree | Clean before run | No source files changed for this check. |
+| Debug build output | Not present | No debug APK under current `build/app/outputs/`; do not infer the debug build passed. |
+| Existing release APK | Present | `build/app/outputs/flutter-apk/app-release.apk` (130,305,341 bytes), timestamp after source modifications; ZIP contains `lib/arm64-v8a/libapp.so`, both logos and profile JPEG. This session did not rebuild it. |
+| `flutter --version`, `flutter run --release -d R9CT4004VJE --no-resident` | Timeout | Flutter CLI produced no output and did not complete. Its timed-out child process was stopped; no Flutter CLI run success is claimed. |
+| `adb install -r` of existing release APK | Pass | Android returned `Success`. |
+| `adb shell am start` | Pass (basic launch) | `MainActivity` started; `pidof` returned process ID and activity was `topResumedActivity`. |
+| Release UI inspection | Pass (Library only) | Screenshot in approved local temp directory showed Library with Cloud Library, YouTube entry and Profile navigation; no visible Flutter error. |
+| Home, Profile, player, splash, Firestore | Not Run | Device switched to another app during further inspection; interaction stopped. |
+
+No new `flutter test`, `flutter analyze` or release build completed in this check. The existing APK is signed via the project's debug signing config, despite being built in release mode.
+
+### Earlier failed run attempt (14 November 2026)
 
 - `pubspec.yaml` currently says `sdk: flutter`; previous `flutter+` error is not present in the inspected file.
 - `flutter run --release -d R9CT4004VJE --no-resident`: **Fail before install**, Kotlin incremental cache error due to `C:` Pub cache vs `D:` project.

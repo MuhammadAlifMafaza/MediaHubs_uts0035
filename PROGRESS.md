@@ -9,13 +9,21 @@
 - Added direct HTTPS audio URL entry with `just_audio`, plus playback loading/error, progress, seeking, and controller disposal.
 - Added the bundled asset video player flow with loading/error states, progress/seek controls, and controller disposal.
 - Added Firebase startup initialization with a visible status and a Firestore metadata model. An unbound repository interface describes cloud operations; the concrete implementation is deferred until the collection path and security model are approved.
-- Kept the reusable media card alongside the demo catalogue.
+- The original reusable media card was replaced by a direct-to-player card with Details in its overflow menu.
 - Preserved the supplied media files and Android/Firebase configuration; updated catalogue paths to match renamed MP3 files and the existing MP4. Did not modify or configure iOS.
 - Added logo-based Android launcher icons, pre-Android-12 / Android-12+ splash and logo while Firebase initializes.
 - Added YouTube URL validation, iframe-backed player and Library entry, plus Profile with the supplied photo, creator identity and branded social links.
-- Added Cloud Library setup gate and corrected the form to accept actual registered asset names (including spaces in the MP4 path).
+- Added Cloud Library setup gate and corrected the form to accept registered bundled assets.
 
-## Current
+## Current phase (15 November 2026)
+- Build repair: `flutter pub get` passed, `flutter analyze` found no issues, and 8/8 widget/unit tests passed via temporary `subst M:`. Standard `flutter build apk --debug --split-per-abi` failed on cross-drive Kotlin cache; its retry after changing Gradle settings timed out. Direct Gradle with incremental Kotlin disabled, one worker and a 1200 MB heap **passed** and produced three debug split APKs under `build/app/outputs/flutter-apk/` (17:59). `android/gradle.properties` now records the low-memory and non-incremental settings. No app was installed or run.
+- Added separate Audio/Video tabs and direct-to-player taps from the lists and Search. Home links to both; Library retains metadata/cloud setup, Profile remains a tab. Styled the app and Now Playing/Now Watching screens with MediaHub dark blue/green branding and clearer artwork/progress/controls.
+- Renamed the tracked MP4 to `assets/video/rude_mv.mp4` and updated its catalogue path; the video player now displays the underlying initialization/playback error and offers retry/full-screen controls. File signatures include `ftyp`, `avc1`, and `mp4a`, but Android offline playback is **not** verified after this change.
+- Pre-filled the editable YouTube URL with `https://youtu.be/chl0R8C4NJ8`; the Video tab also opens the featured video player directly. Network audio shows the Moonride title as an example but requires a lawful direct audio URL from the user.
+- Removed only the unused MediaCard implementation and two empty untracked scaffold directories (`lib/models/`, `lib/repositories/`). Supplied assets, Firebase configuration, and generated Gradle caches were not deleted.
+- Earlier in this phase, Flutter/Dart CLI and a direct Gradle build timed out. Later retries produced the verified test/build results above. See `docs/TESTING.md` for both attempts.
+
+## Previous status
 - Three **debug split-per-ABI APKs built** without installing or running this revision. Earlier device-validation session saw the old Library and bundled audio progress; it does not validate the new screens.
 - Firestore CRUD, network audio, YouTube playback and offline video acceptance remain incomplete.
 

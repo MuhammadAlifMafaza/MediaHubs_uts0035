@@ -3,8 +3,12 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'youtube_video_id.dart';
 
+const featuredYoutubeUrl = 'https://youtu.be/chl0R8C4NJ8';
+
 class YoutubeUrlScreen extends StatefulWidget {
-  const YoutubeUrlScreen({super.key});
+  const YoutubeUrlScreen({super.key, this.initialUrl = featuredYoutubeUrl});
+
+  final String initialUrl;
 
   @override
   State<YoutubeUrlScreen> createState() => _YoutubeUrlScreenState();
@@ -12,7 +16,13 @@ class YoutubeUrlScreen extends StatefulWidget {
 
 class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _urlController = TextEditingController();
+  late final TextEditingController _urlController;
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController(text: widget.initialUrl);
+  }
 
   @override
   void dispose() {
@@ -23,7 +33,7 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
   void _openVideo() {
     if (!_formKey.currentState!.validate()) return;
     final videoId = youtubeVideoId(_urlController.text)!;
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => YoutubeVideoScreen(videoId: videoId),
       ),
@@ -52,7 +62,7 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
             keyboardType: TextInputType.url,
             decoration: const InputDecoration(
               labelText: 'YouTube URL',
-              hintText: 'https://www.youtube.com/watch?v=...',
+              hintText: featuredYoutubeUrl,
             ),
             validator: (value) => youtubeVideoId(value ?? '') == null
                 ? 'Enter a valid HTTPS YouTube video URL.'
@@ -105,6 +115,16 @@ class _YoutubeVideoScreenState extends State<YoutubeVideoScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         YoutubePlayer(controller: _controller),
+        const SizedBox(height: 20),
+        Text('Now Watching', style: Theme.of(context).textTheme.headlineSmall),
+        const Chip(label: Text('YouTube · internet required')),
+        FilledButton.tonalIcon(
+          onPressed: () => Navigator.of(context).pushReplacement(
+            MaterialPageRoute<void>(builder: (_) => const YoutubeUrlScreen()),
+          ),
+          icon: const Icon(Icons.edit_outlined),
+          label: const Text('Change YouTube URL'),
+        ),
         const SizedBox(height: 12),
         const Text(
           'Playback requires internet and permission to embed the video.',

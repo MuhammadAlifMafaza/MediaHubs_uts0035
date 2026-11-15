@@ -15,6 +15,8 @@ class MediaDetailScreen extends StatelessWidget {
         : VideoPlayerScreen(
             sourceType: item.sourceType,
             mediaUrl: item.mediaUrl,
+            title: item.title,
+            creator: item.creator,
           );
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => route));
   }

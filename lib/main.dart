@@ -2,9 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'home/home_screen.dart';
+import 'audio/audio_screen.dart';
 import 'library/library_screen.dart';
 import 'profile/profile_screen.dart';
-import 'search/search_screen.dart';
+import 'video/video_screen.dart';
 
 void main() => runApp(const MediaHubApp());
 
@@ -19,8 +20,13 @@ class MediaHubApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF1769AA),
-        secondary: const Color(0xFF25A879),
+        seedColor: const Color(0xFF28B6A8),
+        brightness: Brightness.dark,
+      ),
+      scaffoldBackgroundColor: const Color(0xFF101923),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1B2B36),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       useMaterial3: true,
     ),
@@ -94,9 +100,12 @@ class _MainNavigationState extends State<_MainNavigation> {
     final screens = [
       HomeScreen(
         firebaseStatus: widget.firebaseStatus,
-        onOpenLibrary: () => setState(() => _selectedIndex = 2),
+        onOpenLibrary: () => setState(() => _selectedIndex = 3),
+        onOpenAudio: () => setState(() => _selectedIndex = 1),
+        onOpenVideo: () => setState(() => _selectedIndex = 2),
       ),
-      const SearchScreen(),
+      const AudioScreen(),
+      const VideoScreen(),
       const LibraryScreen(),
       const ProfileScreen(),
     ];
@@ -113,7 +122,16 @@ class _MainNavigationState extends State<_MainNavigation> {
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
+          NavigationDestination(
+            icon: Icon(Icons.headphones_outlined),
+            selectedIcon: Icon(Icons.headphones),
+            label: 'Audio',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.movie_outlined),
+            selectedIcon: Icon(Icons.movie),
+            label: 'Video',
+          ),
           NavigationDestination(
             icon: Icon(Icons.video_library_outlined),
             selectedIcon: Icon(Icons.video_library),

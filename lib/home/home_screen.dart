@@ -2,20 +2,36 @@ import 'package:flutter/material.dart';
 
 import '../media/media_catalog.dart';
 import '../media/media_item.dart';
+import '../search/search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
     required this.firebaseStatus,
     required this.onOpenLibrary,
+    required this.onOpenAudio,
+    required this.onOpenVideo,
   });
 
   final String firebaseStatus;
   final VoidCallback onOpenLibrary;
+  final VoidCallback onOpenAudio;
+  final VoidCallback onOpenVideo;
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('MediaHub')),
+    appBar: AppBar(
+      title: const Text('MediaHub'),
+      actions: [
+        IconButton(
+          tooltip: 'Search',
+          icon: const Icon(Icons.search),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const SearchScreen())),
+        ),
+      ],
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -47,15 +63,24 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 24),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.library_music_outlined),
-            title: const Text('Bundled media collection'),
+            leading: const Icon(Icons.headphones),
+            title: const Text('Your music'),
             subtitle: Text(
-              '${demoMediaItems.where((item) => item.type == MediaType.audio).length} audio tracks and 1 video in the app',
+              '${demoMediaItems.where((item) => item.type == MediaType.audio).length} offline tracks',
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: onOpenLibrary,
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: onOpenAudio,
           ),
-        ),      
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.movie_outlined),
+            title: const Text('Watch videos'),
+            subtitle: const Text('Offline MP4 and YouTube'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: onOpenVideo,
+          ),
+        ),
         const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: onOpenLibrary,
