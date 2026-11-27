@@ -91,6 +91,10 @@ class _UsersScreenState extends State<UsersScreen> {
         error.code == 'operation-not-allowed') {
       return 'Anonymous Authentication belum diaktifkan di Firebase Console.';
     }
+    if (error is FirebaseAuthException &&
+        (error.message?.contains('CONFIGURATION_NOT_FOUND') ?? false)) {
+      return 'Firebase Authentication belum dikonfigurasi. Pilih project mediahubs-bbf06 di Firebase Console, buka Authentication > Get started (jika muncul), lalu aktifkan provider Anonymous.';
+    }
     if (error is FirebaseException && error.code == 'permission-denied') {
       return 'Firestore menolak akses. Periksa Rules untuk collection users.';
     }

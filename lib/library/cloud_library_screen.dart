@@ -58,6 +58,10 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
         error.code == 'operation-not-allowed') {
       return 'Anonymous sign-in is disabled. Enable it in Firebase Console > Authentication.';
     }
+    if (error is FirebaseAuthException &&
+        (error.message?.contains('CONFIGURATION_NOT_FOUND') ?? false)) {
+      return 'Firebase Authentication is not configured for this project. In Firebase Console, select mediahubs-bbf06, open Authentication, choose Get started if shown, then enable Anonymous sign-in.';
+    }
     if (error is FirebaseException && error.code == 'permission-denied') {
       return 'Firestore denied access. Check Rules for users/{uid}/media/{mediaId}.';
     }

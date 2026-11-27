@@ -26,7 +26,7 @@ Device media scanning uses `photo_manager` 3.12.0 and Android read permissions o
 
 ## Firebase setup gate
 
-`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database access. The media Library uses `users/{uid}/media/{mediaId}`. Classroom CRUD uses the separate root collection `users`, with records scoped by `ownerUid`; both flows require Anonymous Authentication and matching reviewed Rules. Review `docs/firestore.rules.example` before enabling cloud operations. The app does not upload audio or video files.
+`android/app/google-services.json` matches project `mediahubs-bbf06`, App ID `1:244687132106:android:bcf329d5b370d5286a2b33`, and package `com.mediahubs.uts0035`. If Auth reports `CONFIGURATION_NOT_FOUND`, open this project in Firebase Console, select **Authentication > Get started > Sign-in method**, enable **Anonymous**, and save. Create the Firestore database if it does not exist, then review and publish `docs/firestore.rules.example`. The media Library uses `users/{uid}/media/{mediaId}`. Classroom CRUD uses the separate root collection `users`, with records scoped by `ownerUid`. Firebase Storage is not connected; audio and video files are not uploaded.
 
 ## UTS demo checklist
 
