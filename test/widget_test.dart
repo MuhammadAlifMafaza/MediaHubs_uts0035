@@ -103,6 +103,8 @@ class _MemoryUsersRepository implements UsersRepository {
 
   void _publish() => _changes.add(List.unmodifiable(_users));
 
+  void seed(List<UserRecord> users) => _users.addAll(users);
+
   @override
   Future<void> create(UserRecord user) async {
     _users.add(
@@ -240,6 +242,49 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Hapus'));
     await tester.pumpAndSettle();
     expect(find.text('Belum ada data user.'), findsOneWidget);
+
+    await repository.dispose();
+  });
+
+  testWidgets('Malformed user records are shown and can be edited', (
+    tester,
+  ) async {
+    final repository = _MemoryUsersRepository()
+      ..seed([
+        const UserRecord(
+          id: 'valid-user',
+          nama: 'Valid User',
+          email: 'valid@example.com',
+          kelas: 'SI-1',
+        ),
+        UserRecord.fromMap('invalid-user', {
+          'nama': 123,
+          'email': 'repair@example.com',
+          'kelas': null,
+        }),
+      ]);
+
+    await tester.pumpWidget(
+      MaterialApp(home: UsersScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Valid User'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('Perlu diperbaiki: nama, kelas'), findsOneWidget);
+    expect(find.text('Gagal memuat data users'), findsNothing);
+
+    await tester.tap(find.byTooltip('Aksi untuk data user'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hapus'), findsOneWidget);
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit data user'), findsOneWidget);
+    final fields = tester.widgetList<TextFormField>(find.byType(TextFormField));
+    expect(fields.elementAt(0).controller!.text, isEmpty);
+    expect(fields.elementAt(1).controller!.text, 'repair@example.com');
+    expect(fields.elementAt(2).controller!.text, isEmpty);
 
     await repository.dispose();
   });

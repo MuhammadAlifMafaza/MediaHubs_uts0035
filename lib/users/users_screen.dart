@@ -59,7 +59,9 @@ class _UsersScreenState extends State<UsersScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Hapus data user?'),
-        content: Text('Hapus data ${user.nama}?'),
+        content: Text(
+          'Hapus data ${user.nama.isEmpty ? 'user ini' : user.nama}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -132,29 +134,71 @@ class _UsersScreenState extends State<UsersScreen> {
                       ),
                     ),
                     for (final user in users)
-                      Card(
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person_outline),
-                          ),
-                          title: Text(user.nama),
-                          subtitle: Text('${user.email}\n${user.kelas}'),
-                          isThreeLine: true,
-                          trailing: PopupMenuButton<String>(
-                            tooltip: 'Aksi untuk ${user.nama}',
-                            onSelected: (action) {
-                              if (action == 'edit') _openForm(user: user);
-                              if (action == 'delete') _delete(user);
-                            },
-                            itemBuilder: (_) => const [
-                              PopupMenuItem(value: 'edit', child: Text('Edit')),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text('Hapus'),
+                      Builder(
+                        builder: (context) {
+                          final hasInvalidFields = user.needsRepair;
+                          final displayName = user.nama.isEmpty
+                              ? '—'
+                              : user.nama;
+                          final displayEmail = user.email.isEmpty
+                              ? '—'
+                              : user.email;
+                          final displayClass = user.kelas.isEmpty
+                              ? '—'
+                              : user.kelas;
+
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                child: Icon(
+                                  hasInvalidFields
+                                      ? Icons.warning_amber_rounded
+                                      : Icons.person_outline,
+                                  color: hasInvalidFields
+                                      ? Colors.deepOrange
+                                      : null,
+                                ),
                               ),
-                            ],
-                          ),
-                        ),
+                              title: Text(displayName),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('$displayEmail\n$displayClass'),
+                                  if (hasInvalidFields)
+                                    Text(
+                                      'Perlu diperbaiki: ${user.invalidFields.join(', ')}',
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .error,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              isThreeLine: true,
+                              trailing: PopupMenuButton<String>(
+                                tooltip:
+                                    'Aksi untuk ${user.nama.isEmpty ? 'data user' : user.nama}',
+                                onSelected: (action) {
+                                  if (action == 'edit') _openForm(user: user);
+                                  if (action == 'delete') _delete(user);
+                                },
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text('Edit'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Hapus'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
                   ],
                 );

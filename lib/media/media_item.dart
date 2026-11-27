@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum MediaType { audio, video }
 
-enum MediaSourceType { network, asset, device }
+enum MediaSourceType { network, youtube, asset, device }
 
 class MediaItem {
   const MediaItem({
@@ -15,6 +15,7 @@ class MediaItem {
     this.description = '',
     this.category = '',
     this.thumbnailUrl = '',
+    this.locationPath,
     this.createdAt,
     this.updatedAt,
   });
@@ -28,6 +29,9 @@ class MediaItem {
   final MediaSourceType sourceType;
   final String mediaUrl;
   final String thumbnailUrl;
+
+  /// Relative device folder path, available for local media only.
+  final String? locationPath;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -62,6 +66,7 @@ class MediaItem {
       sourceType: sourceType,
       mediaUrl: _requiredString(data, 'mediaUrl', id),
       thumbnailUrl: data['thumbnailUrl'] as String? ?? '',
+      locationPath: data['locationPath'] as String?,
       createdAt: _dateTime(data['createdAt']),
       updatedAt: _dateTime(data['updatedAt']),
     );
@@ -80,6 +85,24 @@ class MediaItem {
     if (updatedAt != null) 'updatedAt': Timestamp.fromDate(updatedAt!),
   };
 
+  Map<String, Object?> toLocalMap() => {
+    'id': id,
+    'title': title,
+    'creator': creator,
+    'type': type.name,
+    'description': description,
+    'category': category,
+    'sourceType': sourceType.name,
+    'mediaUrl': mediaUrl,
+    'thumbnailUrl': thumbnailUrl,
+    if (locationPath != null) 'locationPath': locationPath,
+    if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+    if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+  };
+
+  factory MediaItem.fromLocalMap(Map<String, dynamic> data) =>
+      MediaItem.fromMap(data['id'] as String? ?? '', data);
+
   static String _requiredString(
     Map<String, dynamic> data,
     String field,
@@ -95,6 +118,7 @@ class MediaItem {
   static DateTime? _dateTime(Object? value) => switch (value) {
     Timestamp timestamp => timestamp.toDate(),
     DateTime dateTime => dateTime,
+    String date => DateTime.tryParse(date),
     _ => null,
   };
 }

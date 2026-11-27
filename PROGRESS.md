@@ -1,13 +1,15 @@
 # MediaHub Progress
 
 ## Firestore shared access without Authentication (27 November 2026)
-- **Decision:** The project owner chose no Firebase Authentication. The root `media` and `users` collections are shared and publicly readable/writable under the reviewed Rules; do not store private data there.
-- **Completed:** Removed `firebase_auth` and anonymous sign-in from both Firestore repositories. Media CRUD now uses root `media`; classroom CRUD uses root `users` without `ownerUid`.
-- **Completed:** Replaced the per-user Rules example with field/timestamp validation for public CRUD, updated setup guidance, and added UI notices describing shared public access. Legacy `ownerUid` is removed when existing user records are edited.
+- **Decision:** The project owner chose no Firebase Authentication. Root `songs`, `users`, and `playlist` are shared and publicly readable/writable under the Rules; do not store private data there.
+- **Completed:** Removed `firebase_auth` and anonymous sign-in from both Firestore repositories. Cloud Library now uses root `songs`; classroom CRUD uses root `users` without `ownerUid`.
+- **Completed:** Replaced the per-user Rules example with core-field/timestamp validation for `songs` and `users`, allowing additional fields and optional song description/category/thumbnail. Network media remains HTTPS; any non-empty `assets/` path is allowed. Public CRUD on `playlist` remains unrestricted. Legacy `ownerUid` is removed when existing user records are edited.
 - **Dependency:** `dart pub get --offline` completed successfully; `firebase_auth` was removed from `pubspec.lock`.
 - **Validation:** `dart format --output=none --set-exit-if-changed lib test` passed; `dart analyze lib test` passed; `flutter test --concurrency=1` passed 11/11.
-- **Build:** `flutter build apk --release` passed; output is `build/app/outputs/flutter-apk/app-release.apk` (119.4 MB). This APK was not installed/launched after the change.
-- **Pending:** The Firebase Console Rules have not been published and Firestore CRUD has not been tested against the live project. Older `users/{uid}/media` documents are not migrated to root `media`. Firebase Storage remains unimplemented.
+- **Flexible Rules update:** Format and analyzer checks passed after changing Rules/docs. Flutter test retest stalled before output and was stopped; no application Dart source changed. Firebase Rules Playground validation remains pending because Rules are not deployed and Emulator/CLI is unavailable.
+- **Users list repair:** Parsing no longer fails the whole stream for missing, blank, or non-string `nama`/`email`/`kelas`. Invalid rows remain visible with placeholders and a repair warning; users can edit or delete them, with no automatic Firestore writes during reads. Regression tests were added. Format/analyzer pass; Flutter test invocation stalled before output and was stopped.
+- **Build:** `flutter build apk --release` passed; output is `build/app/outputs/flutter-apk/app-release.apk` (55.2 MB). This APK was not installed/launched after the change.
+- **Pending:** The Firebase Console Rules have not been published and Firestore CRUD has not been tested against the live project. Extra fields are accepted from any public client, not just this app. Existing root `media` documents and older `users/{uid}/media` documents are not migrated to root `songs`. Firebase Storage remains unimplemented; playlist has no app UI or schema validation.
 - **User-local files preserved:** `lib/media/media_catalog.dart` title edit, the local screenshot files, and the generated Kotlin session deletion were not included in this change.
 
 > The entries below are historical implementation phases. The no-auth shared Firestore decision and current validation above supersede their earlier authentication gates.

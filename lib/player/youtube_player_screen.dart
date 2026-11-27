@@ -81,9 +81,10 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
 }
 
 class YoutubeVideoScreen extends StatefulWidget {
-  const YoutubeVideoScreen({super.key, required this.videoId});
+  const YoutubeVideoScreen({super.key, required this.videoId, this.title});
 
   final String videoId;
+  final String? title;
 
   @override
   State<YoutubeVideoScreen> createState() => _YoutubeVideoScreenState();
@@ -116,7 +117,10 @@ class _YoutubeVideoScreenState extends State<YoutubeVideoScreen> {
       children: [
         YoutubePlayer(controller: _controller),
         const SizedBox(height: 20),
-        Text('Now Watching', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+          widget.title ?? 'Now Watching',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
         const Chip(label: Text('YouTube · internet required')),
         FilledButton.tonalIcon(
           onPressed: () => Navigator.of(context).pushReplacement(

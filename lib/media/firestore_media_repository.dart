@@ -10,11 +10,11 @@ class FirestoreMediaRepository implements MediaRepository {
 
   final FirebaseFirestore _firestore;
 
-  CollectionReference<Map<String, dynamic>> get _mediaCollection =>
-      _firestore.collection('media');
+  CollectionReference<Map<String, dynamic>> get _songsCollection =>
+      _firestore.collection('songs');
 
   @override
-  Stream<List<MediaItem>> watchItems() => _mediaCollection
+  Stream<List<MediaItem>> watchItems() => _songsCollection
       .orderBy('updatedAt', descending: true)
       .snapshots()
       .map(
@@ -27,7 +27,7 @@ class FirestoreMediaRepository implements MediaRepository {
     final data = item.toMap()
       ..['createdAt'] = FieldValue.serverTimestamp()
       ..['updatedAt'] = FieldValue.serverTimestamp();
-    await _mediaCollection.add(data);
+    await _songsCollection.add(data);
   }
 
   @override
@@ -35,11 +35,11 @@ class FirestoreMediaRepository implements MediaRepository {
     final data = item.toMap()
       ..remove('createdAt')
       ..['updatedAt'] = FieldValue.serverTimestamp();
-    await _mediaCollection.doc(item.id).update(data);
+    await _songsCollection.doc(item.id).update(data);
   }
 
   @override
   Future<void> delete(String documentId) async {
-    await _mediaCollection.doc(documentId).delete();
+    await _songsCollection.doc(documentId).delete();
   }
 }

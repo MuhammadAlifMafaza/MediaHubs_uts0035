@@ -60,6 +60,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         MediaSourceType.network => VideoPlayerController.networkUrl(
           Uri.parse(widget.mediaUrl),
         ),
+        MediaSourceType.youtube => throw StateError(
+          'YouTube videos must use the YouTube player.',
+        ),
       };
       _controller = controller;
       await controller.initialize();
@@ -250,6 +253,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   MediaSourceType.asset => 'Bundled video',
                   MediaSourceType.device => 'On this device',
                   MediaSourceType.network => 'Network video',
+                  MediaSourceType.youtube => 'YouTube video',
                 }),
               ),
             ],

@@ -6,6 +6,7 @@ class UserRecord {
     required this.nama,
     required this.email,
     required this.kelas,
+    this.invalidFields = const {},
     this.createdAt,
     this.updatedAt,
   });
@@ -14,29 +15,37 @@ class UserRecord {
   final String nama;
   final String email;
   final String kelas;
+  final Set<String> invalidFields;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  bool get needsRepair => invalidFields.isNotEmpty;
+
   factory UserRecord.fromFirestore(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
-  ) {
-    final data = document.data();
+  ) => UserRecord.fromMap(document.id, document.data());
+
+  factory UserRecord.fromMap(String id, Map<String, dynamic> data) {
+    final invalidFields = <String>{};
+
+    String readRequiredString(String field) {
+      final value = data[field];
+      if (value is! String || value.trim().isEmpty) {
+        invalidFields.add(field);
+        return '';
+      }
+      return value.trim();
+    }
+
     return UserRecord(
-      id: document.id,
-      nama: _stringField(data, 'nama'),
-      email: _stringField(data, 'email'),
-      kelas: _stringField(data, 'kelas'),
+      id: id,
+      nama: readRequiredString('nama'),
+      email: readRequiredString('email'),
+      kelas: readRequiredString('kelas'),
+      invalidFields: Set.unmodifiable(invalidFields),
       createdAt: _dateTime(data['createdAt']),
       updatedAt: _dateTime(data['updatedAt']),
     );
-  }
-
-  static String _stringField(Map<String, dynamic> data, String field) {
-    final value = data[field];
-    if (value is! String) {
-      throw FormatException('Field "$field" must be a string.');
-    }
-    return value.trim();
   }
 
   static DateTime? _dateTime(Object? value) => switch (value) {

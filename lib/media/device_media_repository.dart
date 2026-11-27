@@ -60,6 +60,7 @@ class PhotoManagerDeviceMediaRepository implements DeviceMediaRepository {
             sourceType: MediaSourceType.device,
             // Resolved to a content URI when the user selects the item.
             mediaUrl: asset.id,
+            locationPath: asset.relativePath?.trim(),
           ),
         );
       }

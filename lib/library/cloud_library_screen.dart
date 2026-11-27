@@ -55,7 +55,7 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
 
   String _errorMessage(Object error) {
     if (error is FirebaseException && error.code == 'permission-denied') {
-      return 'Firestore denied public access. Check Rules for the root media collection.';
+      return 'Firestore denied public access. Check Rules for the root songs collection.';
     }
     return 'Could not load cloud media: $error';
   }

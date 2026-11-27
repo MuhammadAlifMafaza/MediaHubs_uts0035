@@ -3,6 +3,8 @@ import 'package:photo_manager/photo_manager.dart';
 
 import '../player/audio_player_screen.dart';
 import '../player/video_player_screen.dart';
+import '../player/youtube_player_screen.dart';
+import '../player/youtube_video_id.dart';
 import 'media_detail_screen.dart';
 import 'media_item.dart';
 import 'media_repository.dart';
@@ -30,6 +32,7 @@ class PlayableMediaCard extends StatelessWidget {
           MediaSourceType.asset => 'Bundled',
           MediaSourceType.device => 'Device',
           MediaSourceType.network => 'Online',
+          MediaSourceType.youtube => 'YouTube',
         }}',
       ),
       onTap: () => openMediaPlayer(context, item),
@@ -50,6 +53,21 @@ class PlayableMediaCard extends StatelessWidget {
 }
 
 Future<void> openMediaPlayer(BuildContext context, MediaItem item) async {
+  if (item.sourceType == MediaSourceType.youtube) {
+    final videoId = youtubeVideoId(item.mediaUrl);
+    if (videoId == null || item.type != MediaType.video) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link YouTube video tidak valid.')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => YoutubeVideoScreen(videoId: videoId, title: item.title),
+      ),
+    );
+    return;
+  }
   var playableItem = item;
   if (item.sourceType == MediaSourceType.device) {
     try {

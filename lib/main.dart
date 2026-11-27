@@ -6,6 +6,8 @@ import 'media/media_repository.dart';
 import 'home/home_screen.dart';
 import 'audio/audio_screen.dart';
 import 'library/library_screen.dart';
+import 'library/file_library_collection_repository.dart';
+import 'library/firestore_library_collection_repository.dart';
 import 'media/device_media_repository.dart';
 import 'profile/profile_screen.dart';
 import 'users/firestore_users_repository.dart';
@@ -123,6 +125,10 @@ class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
         deviceMedia: widget.deviceMedia,
         mediaRepository: repository,
         usersRepository: usersRepository,
+        localCollections: FileLibraryCollectionRepository(),
+        cloudCollections: firebaseStatus.startsWith('Firebase initialized')
+            ? FirestoreLibraryCollectionRepository()
+            : null,
       );
     },
   );
@@ -134,12 +140,16 @@ class _MainNavigation extends StatefulWidget {
     required this.deviceMedia,
     required this.mediaRepository,
     required this.usersRepository,
+    required this.localCollections,
+    required this.cloudCollections,
   });
 
   final String firebaseStatus;
   final DeviceMediaRepository deviceMedia;
   final MediaRepository? mediaRepository;
   final UsersRepository? usersRepository;
+  final FileLibraryCollectionRepository localCollections;
+  final FirestoreLibraryCollectionRepository? cloudCollections;
 
   @override
   State<_MainNavigation> createState() => _MainNavigationState();
@@ -170,7 +180,12 @@ class _MainNavigationState extends State<_MainNavigation> {
         deviceMedia: widget.deviceMedia,
         scanDevice: _selectedIndex == 2,
       ),
-      LibraryScreen(repository: widget.mediaRepository),
+      LibraryScreen(
+        repository: widget.mediaRepository,
+        deviceMedia: widget.deviceMedia,
+        localCollections: widget.localCollections,
+        cloudCollections: widget.cloudCollections,
+      ),
       const ProfileScreen(),
     ];
 

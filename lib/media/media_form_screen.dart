@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'media_item.dart';
 import 'media_catalog.dart';
+import '../player/youtube_video_id.dart';
 
 class MediaFormScreen extends StatefulWidget {
   const MediaFormScreen({super.key, this.initialItem, this.onSave});
@@ -58,12 +59,24 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
           uri.scheme != 'https' ||
           uri.host.isEmpty ||
           uri.userInfo.isNotEmpty) {
-        return 'Enter a valid HTTPS media URL.';
+        return 'Masukkan URL HTTPS yang valid.';
+      }
+      if ({
+        'youtube.com',
+        'www.youtube.com',
+        'm.youtube.com',
+        'youtu.be',
+      }.contains(uri.host.toLowerCase())) {
+        return 'Untuk tautan YouTube, pilih sumber YouTube.';
+      }
+    } else if (_sourceType == MediaSourceType.youtube) {
+      if (_type != MediaType.video || youtubeVideoId(locator) == null) {
+        return 'Masukkan link video YouTube yang valid.';
       }
     } else if (!demoMediaItems.any(
       (item) => item.mediaUrl == locator && item.type == _type,
     )) {
-      return 'Select a bundled asset path matching the media type.';
+      return 'Pilih asset aplikasi yang sesuai dengan jenis media.';
     }
     return null;
   }
@@ -166,7 +179,13 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
               onChanged: _saving
                   ? null
                   : (value) {
-                      if (value != null) setState(() => _sourceType = value);
+                      if (value == null) return;
+                      setState(() {
+                        _sourceType = value;
+                        if (value == MediaSourceType.youtube) {
+                          _type = MediaType.video;
+                        }
+                      });
                     },
             ),
             if (_sourceType == MediaSourceType.asset)
@@ -203,9 +222,28 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
               decoration: InputDecoration(
                 labelText: _sourceType == MediaSourceType.network
                     ? 'HTTPS media URL *'
-                    : 'Registered asset path *',
+                    : _sourceType == MediaSourceType.youtube
+                    ? 'YouTube video link *'
+                    : 'Bundled asset *',
+                hintText: _sourceType == MediaSourceType.youtube
+                    ? 'https://youtu.be/…'
+                    : _sourceType == MediaSourceType.network
+                    ? 'https://host.example/path/audio.mp3'
+                    : null,
               ),
               validator: _validateLocator,
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('Petunjuk sumber media'),
+                subtitle: Text(switch (_sourceType) {
+                  MediaSourceType.network => 'URL boleh dari host HTTPS mana pun, tetapi harus langsung menuju file atau stream audio/video. Link halaman web, halaman berbagi, login, atau DRM tidak dijamin dapat diputar.',
+                  MediaSourceType.youtube => 'Tempel link video YouTube (youtube.com/watch, youtu.be, atau /shorts/). Satu track menyimpan satu video; pemutaran memerlukan internet dan izin embed dari pemilik video.',
+                  MediaSourceType.asset => 'Pilih media yang sudah dibundel di aplikasi. Path asset tidak dapat mengambil file dari luar project.',
+                  MediaSourceType.device => 'File perangkat dipilih dari pemilih media dan hanya tersimpan di koleksi lokal perangkat ini.',
+                }),
+              ),
             ),
             TextFormField(
               controller: _categoryController,
