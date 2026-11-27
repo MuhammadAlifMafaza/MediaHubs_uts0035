@@ -1,5 +1,21 @@
 # Testing Record
 
+## Shared Firestore without Authentication (27 November 2026)
+
+| Check | Result | Limit |
+|---|---|---|
+| `dart pub get --offline` | Pass | Removed the direct `firebase_auth` dependency and refreshed `pubspec.lock`. |
+| `dart format --output=none --set-exit-if-changed lib test` | Pass | No files needed formatting after the final pass. |
+| `dart analyze lib test` | Pass | No issues found. |
+| `flutter test --concurrency=1` | Pass, 11/11 | Ran using temporary `M:` mapping and approved SDK/cache access. Includes classroom CRUD, media CRUD, and setup states. |
+| FirebaseAuth references in app/dependencies | None | The app now calls Firestore directly. |
+| Firestore Emulator/live CRUD | Not run | No Emulator/Console Rules deployment was performed. Publish the reviewed public rules before a live check. |
+| `flutter build apk --release` | Pass | `build/app/outputs/flutter-apk/app-release.apk` (119.4 MB). Built but not installed/launched after this change. |
+
+The public Rules cover only root `media` and `users`; any client can modify both. Schema validation does not provide ownership. Older `users/{uid}/media` subcollections are not automatically migrated. Firebase Storage remains out of scope.
+
+> The records below describe previous code revisions and are retained as history; the no-auth results above are current.
+
 ## Users CRUD and video screen updates (27 November 2026)
 
 | Check | Result | Limit |

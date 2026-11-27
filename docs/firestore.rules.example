@@ -1,14 +1,10 @@
-// Review in Firebase Console before publishing.
-// Data path: users/{anonymousUid}/media/{mediaId}
+// User-approved no-auth model for the UTS demo.
+// These rules make the matching collections public. Any client can read,
+// create, update, or delete records. Validation limits document shape only;
+// it does not identify or isolate users. Review this exposure before publish.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function ownsUserData(userId) {
-      return request.auth != null
-        && request.auth.uid == userId
-        && request.auth.token.firebase.sign_in_provider == 'anonymous';
-    }
-
     function validMedia(data) {
       return data.keys().hasAll([
           'title', 'creator', 'type', 'description', 'category',
@@ -49,18 +45,12 @@ service cloud.firestore {
         );
     }
 
-    function ownsUserRecord(data) {
-      return request.auth != null
-        && request.auth.token.firebase.sign_in_provider == 'anonymous'
-        && data.ownerUid == request.auth.uid;
-    }
-
     function validUserRecord(data) {
       return data.keys().hasAll([
-          'nama', 'email', 'kelas', 'ownerUid', 'createdAt', 'updatedAt'
+          'nama', 'email', 'kelas', 'createdAt', 'updatedAt'
         ])
         && data.keys().hasOnly([
-          'nama', 'email', 'kelas', 'ownerUid', 'createdAt', 'updatedAt'
+          'nama', 'email', 'kelas', 'createdAt', 'updatedAt'
         ])
         && data.nama is string
         && data.nama.size() > 0
@@ -71,38 +61,28 @@ service cloud.firestore {
         && data.kelas is string
         && data.kelas.size() > 0
         && data.kelas.size() <= 80
-        && data.ownerUid is string
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
 
-    // Basic classroom CRUD records, separate from the media catalogue.
-    // Client queries must include where('ownerUid', isEqualTo: currentUid).
-    match /users/{userRecordId} {
-      allow read: if ownsUserRecord(resource.data);
-      allow create: if ownsUserRecord(request.resource.data)
-        && validUserRecord(request.resource.data)
+    match /media/{mediaId} {
+      allow read, delete: if true;
+      allow create: if validMedia(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
-      allow update: if ownsUserRecord(resource.data)
-        && ownsUserRecord(request.resource.data)
-        && validUserRecord(request.resource.data)
+      allow update: if validMedia(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time;
-      allow delete: if ownsUserRecord(resource.data);
     }
 
-    match /users/{userId}/media/{mediaId} {
-      allow read: if ownsUserData(userId);
-      allow create: if ownsUserData(userId)
-        && validMedia(request.resource.data)
+    match /users/{userRecordId} {
+      allow read, delete: if true;
+      allow create: if validUserRecord(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
-      allow update: if ownsUserData(userId)
-        && validMedia(request.resource.data)
+      allow update: if validUserRecord(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time;
-      allow delete: if ownsUserData(userId);
     }
   }
 }

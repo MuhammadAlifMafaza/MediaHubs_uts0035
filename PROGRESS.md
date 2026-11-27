@@ -1,5 +1,17 @@
 # MediaHub Progress
 
+## Firestore shared access without Authentication (27 November 2026)
+- **Decision:** The project owner chose no Firebase Authentication. The root `media` and `users` collections are shared and publicly readable/writable under the reviewed Rules; do not store private data there.
+- **Completed:** Removed `firebase_auth` and anonymous sign-in from both Firestore repositories. Media CRUD now uses root `media`; classroom CRUD uses root `users` without `ownerUid`.
+- **Completed:** Replaced the per-user Rules example with field/timestamp validation for public CRUD, updated setup guidance, and added UI notices describing shared public access. Legacy `ownerUid` is removed when existing user records are edited.
+- **Dependency:** `dart pub get --offline` completed successfully; `firebase_auth` was removed from `pubspec.lock`.
+- **Validation:** `dart format --output=none --set-exit-if-changed lib test` passed; `dart analyze lib test` passed; `flutter test --concurrency=1` passed 11/11.
+- **Build:** `flutter build apk --release` passed; output is `build/app/outputs/flutter-apk/app-release.apk` (119.4 MB). This APK was not installed/launched after the change.
+- **Pending:** The Firebase Console Rules have not been published and Firestore CRUD has not been tested against the live project. Older `users/{uid}/media` documents are not migrated to root `media`. Firebase Storage remains unimplemented.
+- **User-local files preserved:** `lib/media/media_catalog.dart` title edit, the local screenshot files, and the generated Kotlin session deletion were not included in this change.
+
+> The entries below are historical implementation phases. The no-auth shared Firestore decision and current validation above supersede their earlier authentication gates.
+
 ## Users CRUD and video player update (27 November 2026)
 - **Completed:** Renamed the bundled video path to `assets/video/rude_mv.mp4`, updated the catalog/pubspec/test references, and moved the YouTube section above offline/device videos.
 - **Completed:** Added a standalone root `users` Firestore CRUD flow (`nama`, `email`, `kelas`) launched from Home. It is separate from Library/media CRUD and scopes records by anonymous `ownerUid`.

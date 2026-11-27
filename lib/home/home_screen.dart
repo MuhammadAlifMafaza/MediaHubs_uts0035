@@ -103,9 +103,9 @@ class HomeScreen extends StatelessWidget {
                   ? Icons.cloud_off_outlined
                   : Icons.cloud_queue_outlined,
             ),
-            title: const Text('Cloud library not configured'),
+            title: const Text('Firestore setup status'),
             subtitle: Text(
-              '$firebaseStatus Firestore schema, Authentication, and rules must be verified before enabling CRUD.',
+              '$firebaseStatus Create Firestore and publish the reviewed public Rules before using shared CRUD.',
             ),
           ),
         ),

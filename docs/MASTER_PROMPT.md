@@ -33,7 +33,7 @@ Do **not** use speculative model IDs, assume extra agents exist, or invent provi
 1. Detect Flutter/Dart/Android SDK versions and emulator/device availability using `flutter doctor`, `flutter --version`, `flutter devices` as appropriate.
 2. Inspect the project tree, Flutter files, Git state, assets, and existing Firebase setup.
 3. Identify whether the Firebase JSON exists. If the filename is `google-services(1).json`, carefully copy it to Android's expected `google-services.json` path when initializing. Do not print keys or IDs unrelated to the setup.
-4. Identify what cannot be verified from the Firebase Console: existing database, collection, security rules, Authentication.
+4. Identify what cannot be verified from the Firebase Console: existing database, collection, and security rules.
 5. Record the initial status and dependencies in `PROGRESS.md`.
 
 **Phase 1 — Flutter application skeleton**
@@ -49,8 +49,8 @@ Do **not** use speculative model IDs, assume extra agents exist, or invent provi
 
 1. Configure Firebase initialization using the installed compatible FlutterFire approach.
 2. Verify that the Android package matches the provided Firebase app configuration.
-3. Determine the safest practical authorization model from actual Firestore/Auth configuration. Prefer per-user authenticated rules. Do not write unrestricted rules.
-4. If Firestore/Auth remote settings cannot be inspected, implement an adaptable repository interface and document required console steps; **do not claim live CRUD passed**.
+3. Follow the user's approved UTS decision: no Firebase Authentication and shared public CRUD on root `media` and `users`, with schema validation. Make the public exposure clear; do not store sensitive records.
+4. Document Firestore Console steps; **do not claim live CRUD passed** until deployed rules and a device test confirm it.
 5. Implement the agreed media metadata schema: `title`, `creator`, `type`, `description`, `category`, `sourceType`, `mediaUrl`, `thumbnailUrl`, timestamps.
 6. Implement realtime read, create, update, delete with exception handling and validation.
 

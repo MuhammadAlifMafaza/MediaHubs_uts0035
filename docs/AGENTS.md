@@ -37,9 +37,9 @@ Implement **P0 features first**: Firestore read/create/update/delete; audio play
 ## Firebase and security policy
 
 - Treat existing Firebase Android JSON as **project configuration**, not as proof of working Firestore, authentication, or rules.
-- Before implementing writes, inspect available Firestore schema, Rules and Authentication settings. If inaccessible, clearly record the missing console actions.
-- **Never publish unrestricted Firestore rules** (`allow read, write: if true`) as a final solution. Propose per-user authenticated rules (e.g. anonymous auth with `users/{uid}/media/{mediaId}`) and adapt repository paths to the approved schema.
-- Do not assume that `media` root collection is protected when an anonymous session exists. Rules and document paths must match.
+- Before implementing writes, inspect available Firestore schema and Rules. If inaccessible, clearly record the missing console actions.
+- The project owner explicitly approved no-auth shared Firestore CRUD for this UTS demo. Use only the root `media` and `users` collections with field validation in `docs/firestore.rules.example`; do not add Firebase Authentication unless the owner changes this decision.
+- These public Rules allow any client to read, create, update, or delete documents in the two matched collections. Do not store sensitive data. Do not deploy remote Rules or create cloud resources without explicit authorization.
 - Do not create service-account keys, commit tokens, echo secrets, or copy project credentials into documentation.
 - Do not change remote Firebase settings, deploy rules, or create cloud resources without authorization and access.
 - When a required Firebase choice is unverified, stop only the dependent task; continue independent UI, asset playback, and tests.

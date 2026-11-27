@@ -137,6 +137,10 @@ void main() {
   testWidgets('Cloud library creates, edits, and confirms media deletion', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final repository = _MemoryMediaRepository();
     await tester.pumpWidget(
       MaterialApp(home: CloudLibraryScreen(repository: repository)),
@@ -160,6 +164,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Details'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Edit metadata'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Edit metadata'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).at(0), 'Updated Track');
@@ -171,6 +177,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Details'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Delete from cloud'),
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('Delete from cloud'));
     await tester.pumpAndSettle();
     expect(
@@ -193,6 +204,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Belum ada data user.'), findsOneWidget);
+    expect(
+      find.text(
+        'Database ini digunakan bersama tanpa login; klien lain dapat mengubah datanya.',
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Tambah user pertama'));
     await tester.pumpAndSettle();
@@ -244,11 +261,11 @@ void main() {
     );
     expect(find.text('Open Library'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Cloud library not configured'),
+      find.text('Firestore setup status'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Cloud library not configured'), findsOneWidget);
+    expect(find.text('Firestore setup status'), findsOneWidget);
   });
 
   testWidgets('Audio and Video have separate destinations', (tester) async {
@@ -272,7 +289,7 @@ void main() {
     expect(find.text('Network audio'), findsNothing);
     await tester.tap(find.text('Video'));
     await tester.pumpAndSettle();
-    expect(find.text('RUDE! MV'), findsOneWidget);
+    expect(find.text('Hearts2Hearts 하츠투하츠 RUDE! MV'), findsOneWidget);
     expect(find.text('Featured YouTube video'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('YouTube · online')).dy,
@@ -318,7 +335,7 @@ void main() {
     await tester.tap(find.text('Cloud Library'));
     await tester.pumpAndSettle();
     expect(find.text('Cloud catalogue is not connected'), findsOneWidget);
-    expect(find.text('Firebase setup required'), findsOneWidget);
+    expect(find.text('Firestore setup required'), findsOneWidget);
   });
 
   testWidgets('YouTube entry rejects a non-YouTube URL', (tester) async {

@@ -22,7 +22,7 @@
 | UI | Flutter Material 3; aksen biru/hijau; logo MediaHub dengan latar putih |
 | Development target | Android emulator/perangkat fisik |
 
-Project ID dan Android package di atas telah dibaca dari berkas Firebase Android yang diberikan. **Belum terverifikasi:** Firestore sudah aktif, lokasi database, nama collection saat ini, Security Rules, Authentication, serta keberhasilan koneksi runtime. File `google-services.json` bukan bukti bahwa semua layanan tersebut telah disiapkan.
+Project ID dan Android package di atas telah dibaca dari berkas Firebase Android yang diberikan. **Belum terverifikasi:** Firestore aktif, lokasi database, nama collection saat ini, Rules publik telah diterapkan, serta keberhasilan koneksi runtime. Firebase Authentication tidak digunakan untuk akses Firestore pada keputusan UTS saat ini. File `google-services.json` bukan bukti bahwa semua layanan tersebut telah disiapkan.
 
 ## 2. Sasaran dan batasan
 
@@ -162,15 +162,15 @@ Contoh isi ilustratif (URL di bawah **bukan URL aktif**):
 | Update | `.doc(id).update(data)` | Jangan ubah `createdAt` |
 | Delete | `.doc(id).delete()` | Dialog konfirmasi |
 
-### 7.3 Keamanan Firestore — keputusan yang harus diselesaikan sebelum CRUD
+### 7.3 Keamanan Firestore — keputusan UTS (tanpa Authentication)
 
-Materi kampus menggunakan Test Mode untuk latihan; **jangan jadikan aturan terbuka `allow read, write: if true` sebagai pengaturan final**. Untuk demo Android yang terhubung cloud, implementasi yang direkomendasikan adalah Firebase Anonymous Authentication dan aturan berdasarkan `request.auth` (atau struktur `users/{uid}/media/{id}` jika data hendak diisolasi antar pengguna). Jika autentikasi anonim diterapkan, sesuaikan struktur dokumen dan rules **sebelum** menulis repository; jangan menganggap collection root `media` otomatis aman hanya karena user sudah login.
+Pemilik project memilih Firestore tanpa Firebase Authentication. Media disimpan di koleksi root `media`; data CRUD kelas di koleksi root `users`. Kedua koleksi memakai akses publik bersama: siapa pun yang memakai client project dapat membaca, membuat, mengubah, dan menghapus record. Rules memvalidasi bentuk field dan timestamp, tetapi tidak mengidentifikasi pemilik dan tidak melindungi data dari perubahan oleh client lain. Jangan simpan data privat di koleksi ini.
 
-**Gate keamanan:** sebelum tahap CRUD, verifikasi Firestore Data, Rules, dan status Authentication di Firebase Console; kemudian putuskan schema final. Tidak ada kredensial admin/service-account di aplikasi Flutter.
+Sebelum pengujian, buat database Firestore bila belum ada, tinjau lalu publish `docs/firestore.rules.example`, dan verifikasi CRUD tanpa Auth. Firebase Storage tetap di luar scope; berkas audio/video tidak diunggah. Tidak ada kredensial admin/service-account di aplikasi Flutter.
 
 ## 8. Teknologi dan struktur proyek
 
-**Dependency inti:** `firebase_core`, `cloud_firestore`, `just_audio`, `video_player`, `provider` (opsional untuk state sederhana). `firebase_auth` digunakan jika strategi akses anonim disetujui. `youtube_player_flutter`, `file_picker`, `sqflite`, `path_provider` hanya saat fitur terkait dikerjakan.
+**Dependency inti:** `firebase_core`, `cloud_firestore`, `just_audio`, `video_player`, `provider` (opsional untuk state sederhana). Firebase Authentication tidak digunakan dalam keputusan akses UTS saat ini. `youtube_player_flutter`, `file_picker`, `sqflite`, `path_provider` hanya saat fitur terkait dikerjakan.
 
 **Versi:** gunakan versi stabil yang kompatibel ketika coding, kemudian kunci versi di `pubspec.lock`. Periksa persyaratan plugin dan Android minSdk/compileSdk sebelum build; jangan menyalin nilai SDK dari modul lama tanpa verifikasi.
 
@@ -209,7 +209,7 @@ Struktur ini sengaja sederhana untuk UTS dan dapat dipisah menjadi feature-based
 1. Jalankan `flutter doctor`; pastikan Android toolchain, Android SDK, dan perangkat/emulator tersedia.
 2. Periksa `flutter --version` dan `flutter devices`.
 3. Pastikan Firebase project `mediahubs-bbf06` milik pengguna sudah dapat diakses.
-4. Di Firebase Console, periksa **Firestore Data, Rules, Authentication**; simpan screenshot untuk dokumentasi.
+4. Di Firebase Console, periksa **Firestore Data** dan **Rules**; simpan screenshot untuk dokumentasi.
 
 **Output:** ringkasan versi Flutter, Android target, status Firebase.  
 **Selesai jika:** semua prasyarat Android teridentifikasi; keputusan keamanan Firestore dibuat.
@@ -362,4 +362,4 @@ Struktur ini sengaja sederhana untuk UTS dan dapat dipisah menjadi feature-based
 
 ---
 
-**Langkah kerja berikutnya:** verifikasi screenshot Firestore **Data**, **Rules**, dan **Authentication**; tetapkan struktur collection dan strategi keamanan final; kemudian mulai Tahap 0 dan Tahap 1. PRD ini adalah pedoman pengerjaan, **bukan laporan bahwa fitur telah dibuat**.
+**Langkah kerja berikutnya:** verifikasi Firestore **Data** dan **Rules** sesuai keputusan no-auth publik, lalu uji CRUD dari aplikasi. PRD ini adalah pedoman pengerjaan, **bukan laporan bahwa fitur telah dibuat**.

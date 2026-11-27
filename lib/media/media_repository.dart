@@ -1,6 +1,6 @@
 import 'media_item.dart';
 
-/// Contract for a protected, per-user cloud catalogue.
+/// Contract for the shared Firestore media catalogue.
 /// Metadata only; media binaries are never uploaded through this interface.
 abstract interface class MediaRepository {
   Stream<List<MediaItem>> watchItems();

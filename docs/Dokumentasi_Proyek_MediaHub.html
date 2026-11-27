@@ -71,7 +71,7 @@
     <table class="data">
       <tr><th>Teknologi</th><th>Penggunaan</th></tr>
       <tr><td>Flutter dan Dart</td><td>UI Material 3, navigasi, formulir, dan logika aplikasi.</td></tr>
-      <tr><td>Firebase Core, Auth, Firestore</td><td>Inisialisasi Firebase, Anonymous Authentication, dan katalog metadata per pengguna.</td></tr>
+      <tr><td>Firebase Core dan Firestore</td><td>Inisialisasi Firebase dan katalog metadata bersama tanpa Authentication.</td></tr>
       <tr><td>just_audio</td><td>Pemutar audio aset dan URL HTTPS langsung.</td></tr>
       <tr><td>video_player</td><td>Pemutar video dari aset, URL langsung, atau URI perangkat.</td></tr>
       <tr><td>photo_manager</td><td>Pemindaian media Android dengan izin pengguna.</td></tr>
@@ -84,9 +84,9 @@
       <div class="box"><strong>Library</strong><br>Aset lokal dan Cloud Library</div>
       <div class="box"><strong>Player</strong><br>Audio, video, dan YouTube</div>
     </div>
-    <div class="arrow">Cloud Library → Anonymous Auth → users/{uid}/media/{mediaId}</div>
-    <div class="note"><strong>Keamanan data.</strong> Setiap sesi anonim mengakses subkoleksi UID miliknya sendiri. Aplikasi tidak mengunggah berkas MP3/MP4 ke Firestore.</div>
-    <p class="muted">Dependency yang ter-resolve tercatat pada <code>pubspec.lock</code>. Firebase Console harus mengaktifkan Anonymous sign-in dan menerapkan Rules yang ditinjau sebelum operasi cloud berhasil.</p>
+    <div class="arrow">Aplikasi → Firestore publik → media / users</div>
+    <div class="warning"><strong>Akses publik tanpa login.</strong> Semua client dapat membaca, menambah, mengubah, atau menghapus record pada koleksi tersebut. Validasi Rules membatasi bentuk data, bukan identitas pemilik. Jangan simpan data privat.</div>
+    <p class="muted">Dependency yang ter-resolve tercatat pada <code>pubspec.lock</code>. Buat database Firestore dan publish Rules contoh setelah ditinjau.</p>
   </section>
 
   <section class="page">
@@ -96,8 +96,7 @@
     <h3>Tahap 2 — Katalog dan aset lokal</h3>
     <p>Katalog demo mengacu pada lima lagu MP3 dan satu video MP4. Path video yang digunakan pada kode dan berkas adalah:</p>
     <div class="note"><code class="unicode">assets/video/rude_mv.mp4</code></div>
-    <p class="muted">Karakter Hangul pada basename: U+D558 U+CE20 U+D22C U+D558 U+CE20.</p>
-    <p>Path tersebut kini didaftarkan secara eksplisit di <code>pubspec.yaml</code>. Pemeriksaan menemukan bahwa assertion lama pada widget test menggunakan nama ASCII yang tidak ada; assertion diselaraskan ke nama berkas aktual.</p>
+    <p>Path tersebut cocok dengan berkas di repository dan didaftarkan melalui direktori <code>assets/video/</code> di <code>pubspec.yaml</code>.</p>
     <h3>Tahap 3 — Pemutar video</h3>
     <p><code>VideoPlayerScreen</code> memakai <code>VideoPlayerController.asset</code> untuk video bundel. Layar menyediakan loading, error dan coba lagi, play/pause, progress, seek, fullscreen, serta pelepasan controller saat layar ditutup.</p>
     <p>Pemeriksaan statis pada kontainer menemukan AVC/H.264 Main Profile Level 3.1, penanda AAC, dan atom <code>moov</code> sebelum <code>mdat</code>. Pemeriksaan ini membantu diagnosis format berkas, tetapi tidak membuktikan kompatibilitas decoder pada perangkat tertentu.</p>
@@ -106,47 +105,47 @@
 
   <section class="page">
     <h2>3. Integrasi Firestore dan CRUD</h2>
-    <p>Repository Firestore mengimplementasikan operasi baca, tambah, ubah, dan hapus. Daftar memakai stream realtime. Create menetapkan timestamp server; update mempertahankan <code>createdAt</code> dan memperbarui <code>updatedAt</code>.</p>
+    <p>Repository Firestore mengimplementasikan operasi baca, tambah, ubah, dan hapus tanpa Firebase Authentication. Daftar memakai stream realtime. Create menetapkan timestamp server; update mempertahankan <code>createdAt</code> dan memperbarui <code>updatedAt</code>.</p>
     <table class="data">
       <tr><th>Operasi</th><th>Perilaku aplikasi</th></tr>
-      <tr><td>Read</td><td>Stream item dari <code>users/{uid}/media</code>; tampilkan loading, kosong, dan error.</td></tr>
+      <tr><td>Read</td><td>Stream item dari koleksi root <code>media</code>; tampilkan loading, kosong, dan error.</td></tr>
       <tr><td>Create</td><td>Form memvalidasi judul, kreator, jenis, sumber dan URL/path.</td></tr>
       <tr><td>Update</td><td>Form edit memuat metadata lama dan mempertahankan waktu pembuatan.</td></tr>
       <tr><td>Delete</td><td>Dialog konfirmasi sebelum dokumen cloud dihapus.</td></tr>
     </table>
     <h3>Aturan keamanan</h3>
-    <p>Contoh aturan berada di <code>docs/firestore.rules.example</code>. Akses hanya diizinkan untuk sesi anonim dengan UID yang sama; field dan tipe data divalidasi. Aturan tersebut belum diterapkan ke proyek Firebase.</p>
-    <div class="warning"><strong>Tindakan Firebase yang diperlukan:</strong> di Firebase Console aktifkan Anonymous Authentication, pastikan database Firestore tersedia, lalu tinjau dan terapkan Rules contoh. Sampai langkah tersebut dilakukan, operasi cloud dapat menerima permission-denied.</div>
-    <p>Dokumen di koleksi root lama tidak dimigrasikan. Data baru memakai path per UID. Berkas media tetap berada di aset aplikasi atau sumber URL; metadata cloud tidak berarti media sudah diunduh untuk penggunaan offline.</p>
+    <p>Contoh aturan berada di <code>docs/firestore.rules.example</code>. Rules memberi akses publik pada koleksi root <code>media</code> dan <code>users</code>, dengan validasi field dan timestamp. Aturan tersebut harus ditinjau dan diterapkan ke proyek Firebase.</p>
+    <div class="warning"><strong>Tindakan Firebase yang diperlukan:</strong> pastikan database Firestore tersedia, lalu tinjau dan publish Rules contoh. Siapa pun yang memiliki akses sebagai client dapat membaca serta mengubah record pada kedua koleksi.</div>
+    <p>Data media lama di subkoleksi <code>users/{uid}/media</code> tidak otomatis dipindahkan ke koleksi root <code>media</code>. Firebase Storage belum diintegrasikan; berkas media tetap berada di aset aplikasi atau sumber URL.</p>
   </section>
 
   <section class="page">
     <h2>4. Hasil dan Pengujian</h2>
     <table class="data">
       <tr><th>Pemeriksaan</th><th>Hasil aktual</th><th>Batasan</th></tr>
-      <tr><td><code>dart pub get</code></td><td class="status ok">Berhasil</td><td>Dependency ter-resolve melalui Dart SDK.</td></tr>
-      <tr><td>Formatter Dart</td><td class="status ok">Berhasil</td><td>Dijalankan melalui Dart SDK pada drive sementara.</td></tr>
+      <tr><td><code>dart pub get --offline</code></td><td class="status ok">Berhasil</td><td>Dependency Auth dihapus dan <code>pubspec.lock</code> diperbarui.</td></tr>
+      <tr><td><code>dart format --output=none</code></td><td class="status ok">Berhasil</td><td>29 file diperiksa; tidak ada perubahan format.</td></tr>
       <tr><td><code>dart analyze lib test</code></td><td class="status ok">Tidak ada masalah</td><td>Analisis statis; bukan bukti runtime.</td></tr>
-      <tr><td><code>flutter test</code></td><td class="status pending">Timeout</td><td>Tanpa keluaran setelah 60 detik; hasil tes tidak diklaim.</td></tr>
-      <tr><td><code>flutter build apk --debug</code></td><td class="status pending">Timeout</td><td>Tanpa keluaran setelah 30 detik; APK baru tidak dihasilkan.</td></tr>
-      <tr><td>Gradle build langsung</td><td class="status pending">Terblokir</td><td>Wrapper <code>gradlew.bat</code> dan executable Gradle tidak tersedia.</td></tr>
-      <tr><td>Firestore dan pemutaran Android</td><td class="status pending">Belum diuji</td><td>Butuh setup Firebase Console dan APK baru pada perangkat.</td></tr>
+      <tr><td><code>flutter test --concurrency=1</code></td><td class="status ok">Lulus 11/11</td><td>Widget dan unit tests melalui drive sementara.</td></tr>
+      <tr><td><code>flutter build apk --release</code></td><td class="status ok">Berhasil</td><td>APK 119,4 MB dibuat; belum dipasang/dijalankan setelah perubahan.</td></tr>
+      <tr><td>Firestore tanpa Auth</td><td class="status pending">Belum diuji</td><td>Butuh database dan Rules publik diterapkan di Firebase Console.</td></tr>
+      <tr><td>Pemutaran Android</td><td class="status pending">Belum diuji</td><td>Butuh pemasangan dan pengujian pada perangkat.</td></tr>
     </table>
     <h3>Daftar verifikasi perangkat</h3>
     <ol>
-      <li>Buat APK debug baru setelah Flutter CLI tersedia.</li>
-      <li>Pasang APK dan putar video aset saat perangkat offline.</li>
+      <li>Pasang APK release terbaru dan uji alur aplikasi.</li>
+      <li>Putar video aset saat perangkat offline.</li>
       <li>Jika gagal, simpan pesan error aktual dari layar video dan log Android.</li>
       <li>Uji audio HTTPS, izin pemindaian media, dan navigasi.</li>
-      <li>Setelah Rules aktif, uji CRUD dan penolakan akses antar-UID.</li>
+      <li>Setelah Rules publik aktif, uji CRUD tanpa login dan validasi dokumen invalid.</li>
     </ol>
-    <p class="muted">Tidak ada screenshot hasil uji yang dimasukkan karena hasil perangkat untuk versi terbaru belum tersedia.</p>
+    <p class="muted">Tidak ada screenshot hasil uji yang dimasukkan karena APK terbaru belum dijalankan pada perangkat.</p>
   </section>
 
   <section>
     <h2>5. Kesimpulan</h2>
-    <p>MediaHub menggabungkan katalog aset lokal, pemutar audio/video, pemindaian media Android, dan kode CRUD Firestore per pengguna anonim. Path video aktual sudah diselaraskan antara aset, deklarasi Flutter, katalog, tes, dan dokumentasi. Pemeriksaan statis MP4 menunjukkan penanda codec H.264 dan AAC yang lazim untuk Android.</p>
-    <p>Namun, pemutaran pada perangkat dan akses Firestore belum dapat dinyatakan berhasil. Build Flutter terakhir timeout dan tidak ada Gradle wrapper lokal. Langkah berikutnya adalah menyiapkan Firebase Console, membangun APK baru, lalu merekam hasil uji aktual.</p>
+    <p>MediaHub menggabungkan katalog aset lokal, pemutar audio/video, pemindaian media Android, dan CRUD Firestore bersama tanpa Authentication. Koleksi <code>media</code> dan <code>users</code> dapat diakses oleh semua client; Rules hanya memvalidasi bentuk record. Path video aktual sudah diselaraskan antara aset, deklarasi Flutter, katalog, tes, dan dokumentasi.</p>
+    <p>Akses Firestore tanpa login dan pemutaran video belum dapat dinyatakan berhasil sampai Rules diterapkan dan APK terbaru diuji. APK release sudah berhasil dibangun; langkah berikutnya adalah meninjau Rules, memasang APK, lalu merekam hasil CRUD aktual.</p>
     <div class="note"><strong>Catatan hak penggunaan.</strong> Lisensi MP4, lagu, foto profil, dan logo belum terdokumentasi. Lihat <code>LICENSES.md</code>; jangan membagikan media atau APK sebelum hak distribusinya dipastikan.</div>
     <div class="footerline">Laporan Proyek — Pemrograman Berbasis Mobile 2 | Muhammad Alif Mafaza | 23.230.0035</div>
   </section>

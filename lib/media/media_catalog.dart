@@ -48,7 +48,7 @@ const demoMediaItems = [
   ),
   MediaItem(
     id: 'local-rude-video',
-    title: 'RUDE! MV',
+    title: 'Hearts2Hearts 하츠투하츠 RUDE! MV',
     creator: 'Hearts2Hearts',
     type: MediaType.video,
     sourceType: MediaSourceType.asset,

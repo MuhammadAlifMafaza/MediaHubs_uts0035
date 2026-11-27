@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../media/media_form_screen.dart';
@@ -54,16 +54,8 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
   }
 
   String _errorMessage(Object error) {
-    if (error is FirebaseAuthException &&
-        error.code == 'operation-not-allowed') {
-      return 'Anonymous sign-in is disabled. Enable it in Firebase Console > Authentication.';
-    }
-    if (error is FirebaseAuthException &&
-        (error.message?.contains('CONFIGURATION_NOT_FOUND') ?? false)) {
-      return 'Firebase Authentication is not configured for this project. In Firebase Console, select mediahubs-bbf06, open Authentication, choose Get started if shown, then enable Anonymous sign-in.';
-    }
     if (error is FirebaseException && error.code == 'permission-denied') {
-      return 'Firestore denied access. Check Rules for users/{uid}/media/{mediaId}.';
+      return 'Firestore denied public access. Check Rules for the root media collection.';
     }
     return 'Could not load cloud media: $error';
   }
@@ -102,7 +94,7 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
                         leading: Icon(Icons.cloud_done_outlined),
                         title: Text('Synced metadata'),
                         subtitle: Text(
-                          'Audio and video files stay at their asset or network source.',
+                          'Shared public database: other clients can read, change, or delete these records. Media files stay at their asset or network source.',
                         ),
                       ),
                     ),
@@ -125,9 +117,9 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
       Card(
         child: ListTile(
           leading: Icon(Icons.verified_user_outlined),
-          title: Text('Firebase setup required'),
+          title: Text('Firestore setup required'),
           subtitle: Text(
-            'Initialize Firebase, enable Anonymous Authentication, and apply reviewed per-user Firestore Rules before cloud access.',
+            'Create the database and publish the reviewed public Rules. No user sign-in is used; anyone with access to this project can change shared records.',
           ),
         ),
       ),
@@ -172,6 +164,11 @@ class _CloudLibraryScreenState extends State<CloudLibraryScreen> {
           const Icon(Icons.library_add_outlined, size: 56),
           const SizedBox(height: 16),
           const Text('Your cloud library is empty.'),
+          const SizedBox(height: 8),
+          const Text(
+            'This is a shared public database. Other clients can change its records.',
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: () => _openForm(),

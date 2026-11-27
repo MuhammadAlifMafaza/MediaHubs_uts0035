@@ -115,7 +115,7 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
                   leading: Icon(Icons.info_outline),
                   title: Text('Cloud saving is not enabled yet'),
                   subtitle: Text(
-                    'Confirm Firestore schema, Authentication, and Security Rules before enabling writes.',
+                    'Create the Firestore database and publish the reviewed public Rules before enabling writes.',
                   ),
                 ),
               ),

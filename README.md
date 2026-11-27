@@ -6,7 +6,7 @@ Android-first Flutter multimedia library prototype for the UTS project.
 
 - Flutter 3.47.7 / Dart 3.13.5 (or compatible)
 - Android SDK and an Android emulator or device
-- For Firestore features: Firebase Console access to verify Firestore, Authentication, rules, and the approved collection structure
+- For Firestore features: a Firestore database and reviewed public Rules published in the Firebase Console; no Firebase Authentication is used
 - For offline video playback: confirm redistribution rights for the existing MP4 under `assets/video/` before submitting the project
 
 ## Setup and run
@@ -26,12 +26,12 @@ Device media scanning uses `photo_manager` 3.12.0 and Android read permissions o
 
 ## Firebase setup gate
 
-`android/app/google-services.json` matches project `mediahubs-bbf06`, App ID `1:244687132106:android:bcf329d5b370d5286a2b33`, and package `com.mediahubs.uts0035`. If Auth reports `CONFIGURATION_NOT_FOUND`, open this project in Firebase Console, select **Authentication > Get started > Sign-in method**, enable **Anonymous**, and save. Create the Firestore database if it does not exist, then review and publish `docs/firestore.rules.example`. The media Library uses `users/{uid}/media/{mediaId}`. Classroom CRUD uses the separate root collection `users`, with records scoped by `ownerUid`. Firebase Storage is not connected; audio and video files are not uploaded.
+`android/app/google-services.json` matches project `mediahubs-bbf06`, App ID `1:244687132106:android:bcf329d5b370d5286a2b33`, and package `com.mediahubs.uts0035`. The app uses Firestore directly with no Firebase Authentication. Create the Firestore database if it does not exist, then review and publish `docs/firestore.rules.example`. Media metadata is stored in the root collection `media`; classroom records use the root collection `users`. These collections are shared and public: any client can read, create, update, or delete records. Field validation does not provide user identity or ownership. Firebase Storage is not connected; audio and video files remain local or at their existing network URL.
 
 ## UTS demo checklist
 
-- [ ] Enable Anonymous Authentication and apply reviewed per-user rules from `docs/firestore.rules.example` before Firestore CRUD.
-- [ ] Verify classroom CRUD against the root `users` collection separately from the media Library.
+- [ ] Create Firestore and apply reviewed public CRUD rules from `docs/firestore.rules.example` before testing cloud features. Do not store private data in the public collections.
+- [ ] Verify classroom CRUD against the root `users` collection separately from the media Library; both collections are public and contain no private data.
 - [ ] Test network audio using a direct, accessible audio URL.
 - [ ] Confirm rights for the supplied MP4 and test playback offline on Android.
 - [ ] Run the black-box cases listed in `docs/TESTING.md` on a real Android device/emulator and record evidence.

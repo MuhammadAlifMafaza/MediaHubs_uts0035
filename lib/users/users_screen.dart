@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'user_form_screen.dart';
@@ -87,16 +87,8 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   String _errorMessage(Object error) {
-    if (error is FirebaseAuthException &&
-        error.code == 'operation-not-allowed') {
-      return 'Anonymous Authentication belum diaktifkan di Firebase Console.';
-    }
-    if (error is FirebaseAuthException &&
-        (error.message?.contains('CONFIGURATION_NOT_FOUND') ?? false)) {
-      return 'Firebase Authentication belum dikonfigurasi. Pilih project mediahubs-bbf06 di Firebase Console, buka Authentication > Get started (jika muncul), lalu aktifkan provider Anonymous.';
-    }
     if (error is FirebaseException && error.code == 'permission-denied') {
-      return 'Firestore menolak akses. Periksa Rules untuk collection users.';
+      return 'Firestore menolak akses publik. Periksa Rules untuk koleksi root users.';
     }
     return 'Gagal memuat data users: $error';
   }
@@ -133,9 +125,9 @@ class _UsersScreenState extends State<UsersScreen> {
                     const Card(
                       child: ListTile(
                         leading: Icon(Icons.info_outline),
-                        title: Text('Latihan CRUD Firestore'),
+                        title: Text('CRUD Firestore publik'),
                         subtitle: Text(
-                          'Data contoh disimpan terpisah dari Library media.',
+                          'Semua klien dapat melihat, mengubah, atau menghapus data bersama ini.',
                         ),
                       ),
                     ),
@@ -175,7 +167,7 @@ class _UsersScreenState extends State<UsersScreen> {
     child: Padding(
       padding: EdgeInsets.all(24),
       child: Text(
-        'Firebase belum siap. Periksa konfigurasi dan Rules Firestore.',
+        'Firestore belum siap. Pastikan database sudah dibuat dan Rules publik sudah diterapkan.',
         textAlign: TextAlign.center,
       ),
     ),
@@ -210,6 +202,11 @@ class _UsersScreenState extends State<UsersScreen> {
           const Icon(Icons.people_outline, size: 56),
           const SizedBox(height: 16),
           const Text('Belum ada data user.'),
+          const SizedBox(height: 8),
+          const Text(
+            'Database ini digunakan bersama tanpa login; klien lain dapat mengubah datanya.',
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: () => _openForm(),
