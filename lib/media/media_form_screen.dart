@@ -54,7 +54,10 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
     if (locator.isEmpty) return 'Media URL/path is required.';
     if (_sourceType == MediaSourceType.network) {
       final uri = Uri.tryParse(locator);
-      if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
+      if (uri == null ||
+          uri.scheme != 'https' ||
+          uri.host.isEmpty ||
+          uri.userInfo.isNotEmpty) {
         return 'Enter a valid HTTPS media URL.';
       }
     } else if (!demoMediaItems.any(
@@ -84,7 +87,7 @@ class _MediaFormScreenState extends State<MediaFormScreen> {
 
     try {
       await widget.onSave!(item);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(

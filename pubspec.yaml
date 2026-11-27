@@ -11,12 +11,25 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^2.0.0
+
+  # Firebase packages
   firebase_core:
+  firebase_auth: ^7.1.0
   cloud_firestore:
+
+  # Audio player packages
   just_audio:
+
+  # Video player packages
   video_player:
-  photo_manager: ^3.12.0
+
+  # YouTube player packages
   youtube_player_flutter:
+  
+  # Media manager
+  photo_manager: ^3.12.0
+
+  # utilities
   url_launcher: 
   font_awesome_flutter: 
 
@@ -36,7 +49,7 @@ flutter:
   assets:
     - assets/
     - assets/music/
-    - assets/video/
+    - "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4"
     - assets/images/
     - assets/images/logo/
 

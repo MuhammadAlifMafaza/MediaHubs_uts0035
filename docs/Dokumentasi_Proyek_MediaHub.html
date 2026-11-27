@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Dokumentasi Proyek MediaHub</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 19mm 21mm;
+      @bottom-right {
+        content: "MediaHub | 23.230.0035 | " counter(page);
+        color: #60717d;
+        font: 9pt Arial, sans-serif;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { font: 10.5pt/1.55 Arial, 'Malgun Gothic', sans-serif; color: #172a38; margin: 0; font-kerning: none; font-variant-ligatures: none; }
+    h1, h2, h3 { color: #12394a; line-height: 1.2; }
+    h1 { font-size: 27pt; margin: 8mm 0 4mm; }
+    h2 { font-size: 17pt; margin: 0 0 5mm; padding-bottom: 2.5mm; border-bottom: 2px solid #24a99c; }
+    h3 { font-size: 12pt; margin: 5mm 0 2mm; }
+    p { margin: 0 0 3mm; }
+    ul, ol { margin: 2mm 0 4mm; padding-left: 7mm; }
+    li { margin: 1.2mm 0; }
+    code { font-family: Consolas, monospace; font-size: 9pt; color: #135c68; }
+    .page { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    .cover { min-height: 252mm; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+    .logo { width: 42mm; height: 42mm; object-fit: contain; margin: 0 auto 12mm; }
+    .eyebrow { color: #168f88; letter-spacing: 2px; font-size: 10pt; font-weight: bold; }
+    .subtitle { font-size: 14pt; color: #506574; margin-bottom: 15mm; }
+    .identity { border-collapse: collapse; margin: 0 auto; text-align: left; min-width: 115mm; }
+    .identity td { padding: 2mm 3mm; border-bottom: 1px solid #dce5e8; }
+    .identity td:first-child { font-weight: bold; width: 42mm; white-space: nowrap; color: #385363; }
+    .note { background: #edf7f6; border-left: 4px solid #24a99c; padding: 3mm 4mm; margin: 4mm 0; }
+    .warning { background: #fff6e6; border-left: 4px solid #df9a28; padding: 3mm 4mm; margin: 4mm 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin: 4mm 0; }
+    .box { background: #f1f6f7; border: 1px solid #d7e3e6; border-radius: 2mm; padding: 3mm; text-align: center; }
+    .arrow { color: #15988e; font-weight: bold; text-align: center; }
+    table.data { width: 100%; border-collapse: collapse; margin: 3mm 0 5mm; font-size: 9.5pt; }
+    table.data th { background: #16495a; color: white; text-align: left; }
+    table.data td, table.data th { border: 1px solid #cbd8dc; padding: 2.2mm; vertical-align: top; }
+    table.data tr:nth-child(even) td { background: #f5f8f9; }
+    .status { font-weight: bold; }
+    .ok { color: #18794e; }
+    .pending { color: #a26500; }
+    .muted { color: #60717d; font-size: 9pt; }
+    .unicode { font-family: 'Malgun Gothic', Arial, sans-serif; overflow-wrap: anywhere; }
+    .footerline { margin-top: 8mm; padding-top: 2mm; border-top: 1px solid #dce5e8; color: #60717d; font-size: 9pt; }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <img class="logo" src="../assets/images/logo/logo.png" alt="Logo MediaHub">
+    <div class="eyebrow">LAPORAN DOKUMENTASI PROYEK</div>
+    <h1>MediaHub</h1>
+    <div class="subtitle">Personal Multimedia Library &amp; Player</div>
+    <table class="identity">
+      <tr><td>NIM</td><td>23.230.0035</td></tr>
+      <tr><td>Nama</td><td>Muhammad Alif Mafaza</td></tr>
+      <tr><td>Program Studi</td><td>Sistem Informasi (Bisnis Digital)</td></tr>
+      <tr><td>Mata Kuliah</td><td>Pemrograman Berbasis Mobile 2</td></tr>
+      <tr><td>Platform</td><td>Android — Flutter</td></tr>
+      <tr><td>Tanggal dokumen</td><td>27 November 2026</td></tr>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>1. Tools dan Teknologi</h2>
+    <p>MediaHub adalah aplikasi katalog dan pemutar media pribadi. Metadata media disimpan terpisah dari berkas audio/video. Aplikasi menargetkan Android untuk demonstrasi UTS.</p>
+    <table class="data">
+      <tr><th>Teknologi</th><th>Penggunaan</th></tr>
+      <tr><td>Flutter dan Dart</td><td>UI Material 3, navigasi, formulir, dan logika aplikasi.</td></tr>
+      <tr><td>Firebase Core, Auth, Firestore</td><td>Inisialisasi Firebase, Anonymous Authentication, dan katalog metadata per pengguna.</td></tr>
+      <tr><td>just_audio</td><td>Pemutar audio aset dan URL HTTPS langsung.</td></tr>
+      <tr><td>video_player</td><td>Pemutar video dari aset, URL langsung, atau URI perangkat.</td></tr>
+      <tr><td>photo_manager</td><td>Pemindaian media Android dengan izin pengguna.</td></tr>
+      <tr><td>Android Studio / VS Code</td><td>Pengembangan dan inspeksi proyek.</td></tr>
+    </table>
+    <h3>Struktur aplikasi</h3>
+    <div class="grid">
+      <div class="box"><strong>Home / Search</strong><br>Ringkasan dan pencarian katalog demo</div>
+      <div class="box"><strong>Audio / Video</strong><br>Aset bundel dan media perangkat</div>
+      <div class="box"><strong>Library</strong><br>Aset lokal dan Cloud Library</div>
+      <div class="box"><strong>Player</strong><br>Audio, video, dan YouTube</div>
+    </div>
+    <div class="arrow">Cloud Library → Anonymous Auth → users/{uid}/media/{mediaId}</div>
+    <div class="note"><strong>Keamanan data.</strong> Setiap sesi anonim mengakses subkoleksi UID miliknya sendiri. Aplikasi tidak mengunggah berkas MP3/MP4 ke Firestore.</div>
+    <p class="muted">Dependency yang ter-resolve tercatat pada <code>pubspec.lock</code>. Firebase Console harus mengaktifkan Anonymous sign-in dan menerapkan Rules yang ditinjau sebelum operasi cloud berhasil.</p>
+  </section>
+
+  <section class="page">
+    <h2>2. Tahap Pengerjaan</h2>
+    <h3>Tahap 1 — Struktur proyek dan navigasi</h3>
+    <p>Proyek dibagi ke direktori fitur seperti <code>home/</code>, <code>audio/</code>, <code>video/</code>, <code>library/</code>, <code>media/</code>, dan <code>player/</code>. Navigasi utama menggunakan Home, Audio, Video, Library, dan Profile.</p>
+    <h3>Tahap 2 — Katalog dan aset lokal</h3>
+    <p>Katalog demo mengacu pada lima lagu MP3 dan satu video MP4. Path video yang digunakan pada kode dan berkas adalah:</p>
+    <div class="note"><code class="unicode">assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4</code></div>
+    <p class="muted">Karakter Hangul pada basename: U+D558 U+CE20 U+D22C U+D558 U+CE20.</p>
+    <p>Path tersebut kini didaftarkan secara eksplisit di <code>pubspec.yaml</code>. Pemeriksaan menemukan bahwa assertion lama pada widget test menggunakan nama ASCII yang tidak ada; assertion diselaraskan ke nama berkas aktual.</p>
+    <h3>Tahap 3 — Pemutar video</h3>
+    <p><code>VideoPlayerScreen</code> memakai <code>VideoPlayerController.asset</code> untuk video bundel. Layar menyediakan loading, error dan coba lagi, play/pause, progress, seek, fullscreen, serta pelepasan controller saat layar ditutup.</p>
+    <p>Pemeriksaan statis pada kontainer menemukan AVC/H.264 Main Profile Level 3.1, penanda AAC, dan atom <code>moov</code> sebelum <code>mdat</code>. Pemeriksaan ini membantu diagnosis format berkas, tetapi tidak membuktikan kompatibilitas decoder pada perangkat tertentu.</p>
+    <div class="warning"><strong>Status pemutaran:</strong> belum ada APK baru yang berhasil dibuat dan dipasang untuk memverifikasi playback pada Android. APK lama mungkin masih membawa asset manifest/path versi sebelumnya.</div>
+  </section>
+
+  <section class="page">
+    <h2>3. Integrasi Firestore dan CRUD</h2>
+    <p>Repository Firestore mengimplementasikan operasi baca, tambah, ubah, dan hapus. Daftar memakai stream realtime. Create menetapkan timestamp server; update mempertahankan <code>createdAt</code> dan memperbarui <code>updatedAt</code>.</p>
+    <table class="data">
+      <tr><th>Operasi</th><th>Perilaku aplikasi</th></tr>
+      <tr><td>Read</td><td>Stream item dari <code>users/{uid}/media</code>; tampilkan loading, kosong, dan error.</td></tr>
+      <tr><td>Create</td><td>Form memvalidasi judul, kreator, jenis, sumber dan URL/path.</td></tr>
+      <tr><td>Update</td><td>Form edit memuat metadata lama dan mempertahankan waktu pembuatan.</td></tr>
+      <tr><td>Delete</td><td>Dialog konfirmasi sebelum dokumen cloud dihapus.</td></tr>
+    </table>
+    <h3>Aturan keamanan</h3>
+    <p>Contoh aturan berada di <code>docs/firestore.rules.example</code>. Akses hanya diizinkan untuk sesi anonim dengan UID yang sama; field dan tipe data divalidasi. Aturan tersebut belum diterapkan ke proyek Firebase.</p>
+    <div class="warning"><strong>Tindakan Firebase yang diperlukan:</strong> di Firebase Console aktifkan Anonymous Authentication, pastikan database Firestore tersedia, lalu tinjau dan terapkan Rules contoh. Sampai langkah tersebut dilakukan, operasi cloud dapat menerima permission-denied.</div>
+    <p>Dokumen di koleksi root lama tidak dimigrasikan. Data baru memakai path per UID. Berkas media tetap berada di aset aplikasi atau sumber URL; metadata cloud tidak berarti media sudah diunduh untuk penggunaan offline.</p>
+  </section>
+
+  <section class="page">
+    <h2>4. Hasil dan Pengujian</h2>
+    <table class="data">
+      <tr><th>Pemeriksaan</th><th>Hasil aktual</th><th>Batasan</th></tr>
+      <tr><td><code>dart pub get</code></td><td class="status ok">Berhasil</td><td>Dependency ter-resolve melalui Dart SDK.</td></tr>
+      <tr><td>Formatter Dart</td><td class="status ok">Berhasil</td><td>Dijalankan melalui Dart SDK pada drive sementara.</td></tr>
+      <tr><td><code>dart analyze lib test</code></td><td class="status ok">Tidak ada masalah</td><td>Analisis statis; bukan bukti runtime.</td></tr>
+      <tr><td><code>flutter test</code></td><td class="status pending">Timeout</td><td>Tanpa keluaran setelah 60 detik; hasil tes tidak diklaim.</td></tr>
+      <tr><td><code>flutter build apk --debug</code></td><td class="status pending">Timeout</td><td>Tanpa keluaran setelah 30 detik; APK baru tidak dihasilkan.</td></tr>
+      <tr><td>Gradle build langsung</td><td class="status pending">Terblokir</td><td>Wrapper <code>gradlew.bat</code> dan executable Gradle tidak tersedia.</td></tr>
+      <tr><td>Firestore dan pemutaran Android</td><td class="status pending">Belum diuji</td><td>Butuh setup Firebase Console dan APK baru pada perangkat.</td></tr>
+    </table>
+    <h3>Daftar verifikasi perangkat</h3>
+    <ol>
+      <li>Buat APK debug baru setelah Flutter CLI tersedia.</li>
+      <li>Pasang APK dan putar video aset saat perangkat offline.</li>
+      <li>Jika gagal, simpan pesan error aktual dari layar video dan log Android.</li>
+      <li>Uji audio HTTPS, izin pemindaian media, dan navigasi.</li>
+      <li>Setelah Rules aktif, uji CRUD dan penolakan akses antar-UID.</li>
+    </ol>
+    <p class="muted">Tidak ada screenshot hasil uji yang dimasukkan karena hasil perangkat untuk versi terbaru belum tersedia.</p>
+  </section>
+
+  <section>
+    <h2>5. Kesimpulan</h2>
+    <p>MediaHub menggabungkan katalog aset lokal, pemutar audio/video, pemindaian media Android, dan kode CRUD Firestore per pengguna anonim. Path video aktual sudah diselaraskan antara aset, deklarasi Flutter, katalog, tes, dan dokumentasi. Pemeriksaan statis MP4 menunjukkan penanda codec H.264 dan AAC yang lazim untuk Android.</p>
+    <p>Namun, pemutaran pada perangkat dan akses Firestore belum dapat dinyatakan berhasil. Build Flutter terakhir timeout dan tidak ada Gradle wrapper lokal. Langkah berikutnya adalah menyiapkan Firebase Console, membangun APK baru, lalu merekam hasil uji aktual.</p>
+    <div class="note"><strong>Catatan hak penggunaan.</strong> Lisensi MP4, lagu, foto profil, dan logo belum terdokumentasi. Lihat <code>LICENSES.md</code>; jangan membagikan media atau APK sebelum hak distribusinya dipastikan.</div>
+    <div class="footerline">Laporan Proyek — Pemrograman Berbasis Mobile 2 | Muhammad Alif Mafaza | 23.230.0035</div>
+  </section>
+</body>
+</html>

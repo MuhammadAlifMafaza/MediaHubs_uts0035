@@ -5,12 +5,14 @@ import '../player/audio_player_screen.dart';
 import '../player/video_player_screen.dart';
 import 'media_detail_screen.dart';
 import 'media_item.dart';
+import 'media_repository.dart';
 
 /// Tap plays immediately; metadata remains available from the overflow menu.
 class PlayableMediaCard extends StatelessWidget {
-  const PlayableMediaCard({super.key, required this.item});
+  const PlayableMediaCard({super.key, required this.item, this.repository});
 
   final MediaItem item;
+  final MediaRepository? repository;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -35,7 +37,8 @@ class PlayableMediaCard extends StatelessWidget {
         tooltip: 'More options for ${item.title}',
         onSelected: (_) => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => MediaDetailScreen(item: item),
+            builder: (_) =>
+                MediaDetailScreen(item: item, repository: repository),
           ),
         ),
         itemBuilder: (_) => const [

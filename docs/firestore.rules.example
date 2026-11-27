@@ -1,0 +1,65 @@
+// Review in Firebase Console before publishing.
+// Data path: users/{anonymousUid}/media/{mediaId}
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function ownsUserData(userId) {
+      return request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function validMedia(data) {
+      return data.keys().hasAll([
+          'title', 'creator', 'type', 'description', 'category',
+          'sourceType', 'mediaUrl', 'thumbnailUrl', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'creator', 'type', 'description', 'category',
+          'sourceType', 'mediaUrl', 'thumbnailUrl', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 120
+        && data.creator is string
+        && data.creator.size() > 0
+        && data.creator.size() <= 120
+        && data.type in ['audio', 'video']
+        && data.description is string
+        && data.description.size() <= 1000
+        && data.category is string
+        && data.category.size() <= 80
+        && data.sourceType in ['network', 'asset']
+        && data.mediaUrl is string
+        && data.mediaUrl.size() > 0
+        && data.thumbnailUrl is string
+        && data.thumbnailUrl.size() <= 2048
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && (
+          (data.sourceType == 'network' && data.mediaUrl.matches('https://.*'))
+          || (data.sourceType == 'asset' && data.mediaUrl in [
+            'assets/music/Hearts2Hearts_-_Lemon_Tang.mp3',
+            'assets/music/Hearts2Hearts_-_RUDE.mp3',
+            'assets/music/Hearts2Hearts_-_Style.mp3',
+            'assets/music/Hearts2Hearts_-_The_Chase.mp3',
+            'assets/music/Hearts2Hearts_-_FOCUS.mp3',
+            "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4"
+          ])
+        );
+    }
+
+    match /users/{userId}/media/{mediaId} {
+      allow read: if ownsUserData(userId);
+      allow create: if ownsUserData(userId)
+        && validMedia(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if ownsUserData(userId)
+        && validMedia(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if ownsUserData(userId);
+    }
+  }
+}

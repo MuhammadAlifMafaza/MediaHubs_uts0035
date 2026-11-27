@@ -6,6 +6,7 @@ import '../media/device_media_section.dart';
 import '../media/media_item.dart';
 import '../media/media_navigation.dart';
 import '../search/search_screen.dart';
+import 'network_audio_form_screen.dart';
 
 class AudioScreen extends StatelessWidget {
   const AudioScreen({
@@ -24,6 +25,15 @@ class AudioScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Audio'),
         actions: [
+          IconButton(
+            tooltip: 'Play network audio from URL',
+            icon: const Icon(Icons.link),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NetworkAudioFormScreen(),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Search',
             icon: const Icon(Icons.search),

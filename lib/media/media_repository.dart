@@ -1,8 +1,7 @@
 import 'media_item.dart';
 
-/// Contract for a protected, per-user cloud catalogue. No implementation is
-/// registered until the Firebase collection path, Auth and Rules are approved.
-/// Metadata only; asset binaries are never uploaded by this interface.
+/// Contract for a protected, per-user cloud catalogue.
+/// Metadata only; media binaries are never uploaded through this interface.
 abstract interface class MediaRepository {
   Stream<List<MediaItem>> watchItems();
 

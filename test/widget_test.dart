@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'package:mediahub/media/media_catalog.dart';
 import 'package:mediahub/media/media_item.dart';
 import 'package:mediahub/media/device_media_repository.dart';
 import 'package:mediahub/media/device_media_section.dart';
+import 'package:mediahub/media/media_repository.dart';
+import 'package:mediahub/library/cloud_library_screen.dart';
 
 class _EmptyDeviceMediaRepository implements DeviceMediaRepository {
   const _EmptyDeviceMediaRepository();
@@ -25,7 +28,111 @@ class _DeniedDeviceMediaRepository implements DeviceMediaRepository {
       const DeviceMediaResult(items: [], permissionDenied: true);
 }
 
+class _MemoryMediaRepository implements MediaRepository {
+  final _items = <MediaItem>[];
+  final _changes = StreamController<List<MediaItem>>.broadcast(sync: true);
+  var _nextId = 0;
+
+  @override
+  Stream<List<MediaItem>> watchItems() => Stream<List<MediaItem>>.multi((sink) {
+    sink.add(List.unmodifiable(_items));
+    final subscription = _changes.stream.listen(
+      sink.add,
+      onError: sink.addError,
+    );
+    sink.onCancel = subscription.cancel;
+  });
+
+  void _publish() => _changes.add(List.unmodifiable(_items));
+
+  @override
+  Future<void> create(MediaItem item) async {
+    _items.add(
+      MediaItem(
+        id: 'memory-${++_nextId}',
+        title: item.title,
+        creator: item.creator,
+        type: item.type,
+        sourceType: item.sourceType,
+        mediaUrl: item.mediaUrl,
+        description: item.description,
+        category: item.category,
+        thumbnailUrl: item.thumbnailUrl,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      ),
+    );
+    _publish();
+  }
+
+  @override
+  Future<void> update(MediaItem item) async {
+    final index = _items.indexWhere((existing) => existing.id == item.id);
+    if (index < 0) throw StateError('Media not found.');
+    _items[index] = item;
+    _publish();
+  }
+
+  @override
+  Future<void> delete(String documentId) async {
+    _items.removeWhere((item) => item.id == documentId);
+    _publish();
+  }
+
+  Future<void> dispose() => _changes.close();
+}
+
 void main() {
+  testWidgets('Cloud library creates, edits, and confirms media deletion', (
+    tester,
+  ) async {
+    final repository = _MemoryMediaRepository();
+    await tester.pumpWidget(
+      MaterialApp(home: CloudLibraryScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Your cloud library is empty.'), findsOneWidget);
+
+    await tester.tap(find.text('Add first media'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Demo Track');
+    await tester.enterText(find.byType(TextFormField).at(1), 'Demo Artist');
+    await tester.enterText(
+      find.byType(TextFormField).at(2),
+      'https://example.org/demo.mp3',
+    );
+    await tester.tap(find.text('Save media'));
+    await tester.pumpAndSettle();
+    expect(find.text('Demo Track'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('More options for Demo Track'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Details'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit metadata'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Updated Track');
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Updated Track'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('More options for Updated Track'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Details'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete from cloud'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Delete "Updated Track" from your cloud library?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your cloud library is empty.'), findsOneWidget);
+
+    await repository.dispose();
+  });
+
   testWidgets('Home presents MediaHub and cloud setup status', (tester) async {
     await tester.pumpWidget(
       MediaHubApp(
@@ -112,7 +219,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cloud Library'));
     await tester.pumpAndSettle();
-    expect(find.text('Cloud catalogue is not connected yet'), findsOneWidget);
+    expect(find.text('Cloud catalogue is not connected'), findsOneWidget);
     expect(find.text('Firebase setup required'), findsOneWidget);
   });
 

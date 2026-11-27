@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'media/firestore_media_repository.dart';
+import 'media/media_repository.dart';
 import 'home/home_screen.dart';
 import 'audio/audio_screen.dart';
 import 'library/library_screen.dart';
@@ -11,10 +13,16 @@ import 'video/video_screen.dart';
 void main() => runApp(const MediaHubApp());
 
 class MediaHubApp extends StatelessWidget {
-  const MediaHubApp({super.key, this.firebaseInitialization, this.deviceMedia});
+  const MediaHubApp({
+    super.key,
+    this.firebaseInitialization,
+    this.deviceMedia,
+    this.mediaRepository,
+  });
 
   final Future<String>? firebaseInitialization;
   final DeviceMediaRepository? deviceMedia;
+  final MediaRepository? mediaRepository;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -35,6 +43,7 @@ class MediaHubApp extends StatelessWidget {
     home: _FirebaseBootstrapScreen(
       initialization: firebaseInitialization,
       deviceMedia: deviceMedia ?? const PhotoManagerDeviceMediaRepository(),
+      mediaRepository: mediaRepository,
     ),
   );
 }
@@ -43,10 +52,12 @@ class _FirebaseBootstrapScreen extends StatefulWidget {
   const _FirebaseBootstrapScreen({
     this.initialization,
     required this.deviceMedia,
+    this.mediaRepository,
   });
 
   final Future<String>? initialization;
   final DeviceMediaRepository deviceMedia;
+  final MediaRepository? mediaRepository;
 
   @override
   State<_FirebaseBootstrapScreen> createState() =>
@@ -56,6 +67,7 @@ class _FirebaseBootstrapScreen extends StatefulWidget {
 class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
   late final Future<String> _initialization =
       widget.initialization ?? _initializeFirebase();
+  MediaRepository? _resolvedRepository;
 
   Future<String> _initializeFirebase() async {
     try {
@@ -87,9 +99,16 @@ class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
           ),
         );
       }
+      final firebaseStatus = snapshot.data!;
+      final repository =
+          widget.mediaRepository ??
+          (firebaseStatus.startsWith('Firebase initialized')
+              ? _resolvedRepository ??= FirestoreMediaRepository()
+              : null);
       return _MainNavigation(
-        firebaseStatus: snapshot.data!,
+        firebaseStatus: firebaseStatus,
         deviceMedia: widget.deviceMedia,
+        mediaRepository: repository,
       );
     },
   );
@@ -99,10 +118,12 @@ class _MainNavigation extends StatefulWidget {
   const _MainNavigation({
     required this.firebaseStatus,
     required this.deviceMedia,
+    required this.mediaRepository,
   });
 
   final String firebaseStatus;
   final DeviceMediaRepository deviceMedia;
+  final MediaRepository? mediaRepository;
 
   @override
   State<_MainNavigation> createState() => _MainNavigationState();
@@ -128,7 +149,7 @@ class _MainNavigationState extends State<_MainNavigation> {
         deviceMedia: widget.deviceMedia,
         scanDevice: _selectedIndex == 2,
       ),
-      const LibraryScreen(),
+      LibraryScreen(repository: widget.mediaRepository),
       const ProfileScreen(),
     ];
 

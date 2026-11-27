@@ -1,5 +1,31 @@
 # Testing Record
 
+## Local video asset audit (27 November 2026)
+
+| Check | Actual result | Limit |
+|---|---|---|
+| Physical asset and catalog path | Match | Both resolve to `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`; a previous widget assertion expected an obsolete ASCII name and was corrected. |
+| Asset declaration | Updated | `pubspec.yaml` now declares the exact MP4 path explicitly. A fresh asset bundle has not been produced. |
+| MP4 container markers | Inspected | H.264 AVC configuration reports Main Profile, Level 3.1; AAC `esds` marker exists; `moov` precedes `mdat`. This is a static file inspection, not proof of Android decoder playback. |
+| Device playback | Not Run | Flutter build timed out and the Android Gradle wrapper is absent, so there is no fresh APK to test. |
+
+The source path is no longer a mismatch with the current on-disk filename. The remaining runtime check is to rebuild so Flutter packages the explicit asset declaration, install that APK, and capture any actual Android player error if it still fails.
+
+## Cloud CRUD implementation (27 November 2026)
+
+| Check | Actual result | Limit |
+|---|---|---|
+| `dart pub get` through the SDK on temporary `M:` drive | Pass | Resolved `firebase_auth` 7.1.0 and updated `pubspec.lock`; required approval to write the Pub cache. |
+| Dart formatter through the SDK on `M:` | Pass | Formatted the changed Dart source and widget test files. |
+| Dart analyzer through the SDK on `M:` | Pass | `dart analyze lib test`: no issues found. |
+| `flutter analyze` | Timed out without output | Flutter CLI remained unresponsive; standalone Dart analyzer completed successfully. |
+| `flutter test` | Timed out without output after 60 seconds | No test result is claimed for the new CRUD flow. |
+| `flutter build apk --debug` | Timed out without output after 30 seconds | No new APK was produced by this command. |
+| Android Gradle debug build | Blocked | `android/gradlew.bat` is absent and no system `gradle` executable is installed; Flutter CLI build remains unverified. No new APK was produced. |
+| Firebase CRUD and rules | Not run | Enable Anonymous sign-in and review/apply `docs/firestore.rules.example` in Firebase Console first. |
+
+The source now contains Anonymous Auth, a per-UID Firestore repository, realtime cloud-list states, and create/edit/delete UI. These changes have not been verified against the live Firebase project or an Android device. The one-off network-audio form and bundled-media Library are also not device-verified.
+
 ## Environment
 
 - Flutter 3.47.7, Dart 3.13.5

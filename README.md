@@ -20,17 +20,17 @@ Build per-ABI debug APKs with `flutter build apk --debug --split-per-abi` when t
 
 ## Current demo
 
-The app has Home, Audio, Video, Library and Profile navigation; Search is available from the Home/Audio/Video app bars. Tap a media item to open its player directly; the `⋯` menu opens Details. Audio/Video include bundled assets and automatically scanned device media when Android read permission is granted. The Video tab also offers a dedicated YouTube player initially set to `https://youtu.be/chl0R8C4NJ8`. Library retains the Firestore setup gate and disabled Add/Edit form. The bundled MP4 has its original Unicode filename again: `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`; the catalogue now matches it. The manual network audio URL form was removed; online audio playback support remains in the player but no cloud catalogue is connected yet. **The existing APKs predate the current device-scan and video-path changes; a new APK and device playback are not verified yet.** Confirm media redistribution rights before sharing an APK.
+The app has Home, Audio, Video, Library and Profile navigation; Search is available from the Home/Audio/Video app bars. Tap a media item to open its player directly; the more-options menu opens Details. Audio/Video include bundled assets and automatically scanned device media when Android read permission is granted. Audio also accepts a direct HTTPS audio URL for immediate playback. The Video tab offers a dedicated YouTube player initially set to `https://youtu.be/chl0R8C4NJ8`. Library lists bundled media and provides a per-user Firestore CRUD flow after Anonymous Authentication and Rules are enabled in Firebase Console. The bundled MP4 is `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`. The asset path in `pubspec.yaml`, media catalog, and test now uses the same Unicode filename. **Android playback has not yet been verified on a rebuilt APK.** See `LICENSES.md` for the asset rights register before redistribution.
 
 Device media scanning uses `photo_manager` 3.12.0 and Android read permissions only (`READ_MEDIA_AUDIO`, `READ_MEDIA_VIDEO`, and API-specific legacy/limited permissions); it does not copy, delete, or upload the original device files. Android permission is requested when the Audio or Video tab is opened. Search currently covers bundled items only. Firebase Storage audio is deferred pending approved read rules, Firestore schema, and a real authorized audio file; no stream URL is invented.
 
 ## Firebase setup gate
 
-`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database or Storage access. No login is planned. In Firebase Console, verify Firestore **Data/Rules** and Storage **files/rules**, then approve what can be read without login and how app-submitted changes are reviewed. Public client writes cannot safely distinguish a trusted editor without an authorization mechanism. No unrestricted rules, remote writes, or Firebase Storage access have been implemented.
+`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database access. The app uses invisible Anonymous Authentication and stores metadata under `users/{uid}/media/{mediaId}`. Enable Anonymous sign-in and review/apply the example in `docs/firestore.rules.example` in Firebase Console before cloud CRUD can succeed. The app does not upload audio or video files.
 
 ## UTS demo checklist
 
-- [ ] Verify Firebase and safely enable Firestore CRUD.
+- [ ] Enable Anonymous Authentication and apply reviewed per-user rules from `docs/firestore.rules.example` before Firestore CRUD.
 - [ ] Test network audio using a direct, accessible audio URL.
 - [ ] Confirm rights for the supplied MP4 and test playback offline on Android.
 - [ ] Run the black-box cases listed in `docs/TESTING.md` on a real Android device/emulator and record evidence.
@@ -39,3 +39,5 @@ Device media scanning uses `photo_manager` 3.12.0 and Android read permissions o
 See `docs/IMPLEMENTATION.md` and `PROGRESS.md` for verified scope and blockers.
 
 Validation results and remaining device tests are recorded in `docs/TESTING.md`.
+
+The Indonesian project report is available as [PDF](docs/Dokumentasi_Proyek_MediaHub.pdf), with its editable HTML source at [docs/Dokumentasi_Proyek_MediaHub.html](docs/Dokumentasi_Proyek_MediaHub.html). Third-party and bundled asset rights are tracked separately in [LICENSES.md](LICENSES.md).
