@@ -1,0 +1,421 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Laporan Proyek MediaHub</title>
+<style>
+@page { size:A4; margin:18mm 17mm 19mm; }
+* { box-sizing:border-box; }
+body { margin:0; color:#1d2935; font-family:Arial,sans-serif; font-size:10pt; line-height:1.48; }
+h1,h2,h3 { color:#123f58; line-height:1.25; }
+h1 { font-size:23pt; margin:0 0 12pt; }
+h2 { font-size:16pt; margin:22pt 0 8pt; border-bottom:1px solid #c8dce4; padding-bottom:4pt; }
+h3 { font-size:12pt; margin:15pt 0 6pt; }
+p { margin:5pt 0 8pt; }
+table { width:100%; border-collapse:collapse; margin:8pt 0 12pt; font-size:9pt; }
+th { background:#dceff0; color:#123f58; text-align:left; }
+th,td { border:1px solid #b9cbd2; padding:6pt 7pt; vertical-align:top; }
+code { font-family:Consolas,'Courier New',monospace; font-size:9pt; }
+pre { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font-family:Consolas,'Courier New',monospace; font-size:7.5pt; line-height:1.2; color:#172b37; background:#f2f6f8; border:1px solid #cfdae0; padding:8pt; }
+ul,ol { margin:5pt 0 10pt; padding-left:22pt; }
+li { margin:3pt 0; }
+.cover { min-height:245mm; display:flex; flex-direction:column; justify-content:center; text-align:center; page-break-after:always; }
+.cover img { width:115px; align-self:center; margin-bottom:24pt; }
+.cover .eyebrow { color:#087f8c; text-transform:uppercase; letter-spacing:2pt; font-size:10pt; font-weight:bold; }
+.cover h1 { margin:12pt 0 4pt; font-size:34pt; }
+.cover .subtitle { color:#526b78; font-size:15pt; }
+.cover .identity { margin:36pt auto 0; width:82%; text-align:left; }
+.cover .identity td:first-child { width:35%; font-weight:bold; }
+.cover .footer-note { color:#607986; font-size:9pt; margin-top:28pt; }
+.code-figure { page-break-inside:avoid; margin:12pt 0 18pt; }
+.code-figure figcaption { color:#123f58; font-size:10pt; padding-bottom:4pt; border-bottom:1px solid #c8dce4; }
+.code-figure figcaption code { color:#087f8c; }
+.code-figure p { font-size:9pt; color:#526b78; }
+.note { margin:10pt 0; padding:10pt 12pt; background:#eaf5f4; border-left:4px solid #178c91; }
+.warn { margin:10pt 0; padding:10pt 12pt; background:#fff2d8; border-left:4px solid #e0a02e; }
+.diagram { margin:12pt 0; padding:12pt; border:1px solid #bdd2da; background:#f4f9fa; text-align:center; font-weight:bold; color:#174f67; }
+.file-inventory td:first-child { white-space:nowrap; font-family:Consolas,'Courier New',monospace; font-size:8pt; }
+</style>
+</head>
+<body>
+<section class="cover">
+<img src="../assets/images/logo/logo.png" alt="Logo MediaHub">
+<div class="eyebrow">Laporan Dokumentasi Proyek</div>
+<h1>MediaHub</h1>
+<div class="subtitle">Personal Multimedia Library &amp; Player</div>
+<table class="identity">
+<tr><td>Nama</td><td>Muhammad Alif Mafaza</td></tr>
+<tr><td>NIM</td><td>23.230.0035</td></tr>
+<tr><td>Program Studi</td><td>Sistem Informasi (Bisnis Digital)</td></tr>
+<tr><td>Mata Kuliah</td><td>Pemrograman Berbasis Mobile 2</td></tr>
+<tr><td>Platform</td><td>Android — Flutter</td></tr>
+<tr><td>Tanggal</td><td>27 November 2026</td></tr>
+</table>
+<div class="footer-note">Laporan ini mendokumentasikan tahapan pengerjaan, fungsi modul, integrasi Firebase, serta cuplikan source code aplikasi.</div>
+</section>
+
+<h1>Tools yang Digunakan</h1>
+<p>Pengembangan MediaHub menggunakan Flutter dan Dart untuk aplikasi Android serta Firebase sebagai layanan backend.</p>
+<ul>
+<li>Flutter SDK dan Dart SDK untuk membangun aplikasi lintas platform.</li>
+<li>Cloud Firestore untuk penyimpanan metadata media dan data users.</li>
+<li>Firebase Core untuk inisialisasi layanan Firebase.</li>
+<li>just_audio dan video_player untuk pemutaran media; youtube_player_flutter untuk video YouTube.</li>
+<li>photo_manager untuk membaca media pada perangkat Android dan url_launcher untuk membuka tautan eksternal.</li>
+<li>Visual Studio Code, Android SDK, emulator Android, atau perangkat Android untuk pengembangan dan penggunaan.</li>
+</ul>
+
+<h1>Tahap Pengerjaan</h1>
+<h2>Tahap 1 — Menyiapkan struktur aplikasi dan Firebase</h2>
+<p>Struktur proyek dipisahkan berdasarkan fungsi. <code>main.dart</code> mengatur tema Material 3, menginisialisasi Firebase, menyiapkan repository, dan membuka navigasi utama. Layar aplikasi kemudian dibagi menjadi Home, Audio, Video, Library, Search, Profile, dan CRUD Users. Pola ini menjaga tampilan, model data, akses database, dan pemutar media tetap terpisah.</p>
+<div class="diagram">Firebase bootstrap → navigasi utama → modul Audio / Video / Library / Search / Profile<br>Home → CRUD Users → koleksi Firestore users<br>Library → Cloud Library → koleksi Firestore songs</div>
+<figure class='code-figure'><figcaption><strong>Cuplikan 1. Inisialisasi Firebase</strong><br><code>lib/main.dart</code></figcaption><p>Firebase diinisialisasi sebelum fitur yang memerlukan layanan cloud dibuka.</p><pre><code>  Future&lt;String&gt; _initializeFirebase() async {
+    try {
+      await Firebase.initializeApp();
+      return &#39;Firebase initialized for this app session.&#39;;
+    } catch (error) {
+      return &#39;Firebase initialization failed: $error&#39;;
+    }</code></pre></figure>
+<h2>Tahap 2 — Menyiapkan katalog dan model media</h2>
+<p>Model <code>MediaItem</code> menyatukan informasi media untuk katalog dan player. Properti <code>type</code> membedakan audio dan video; <code>sourceType</code> membedakan aset aplikasi, URL network, dan media perangkat. Katalog bundel di <code>lib/media/media_catalog.dart</code> mendaftarkan lagu dan video lokal, termasuk video <code>assets/video/rude_mv.mp4</code>.</p>
+<p>Informasi koleksi media diserialisasi ke Firestore dengan field <code>title</code>, <code>creator</code>, <code>type</code>, <code>description</code>, <code>category</code>, <code>sourceType</code>, <code>mediaUrl</code>, <code>thumbnailUrl</code>, <code>createdAt</code>, dan <code>updatedAt</code>.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 2. Pemetaan model media dari Firestore</strong><br><code>lib/media/media_item.dart</code></figcaption><p>Model memetakan tipe media, sumber, serta field wajib dari dokumen songs.</p><pre><code>  factory MediaItem.fromMap(String id, Map&lt;String, dynamic&gt; data) {
+    final type = MediaType.values.firstWhere(
+      (value) =&gt; value.name == data[&#39;type&#39;],
+      orElse: () =&gt; throw FormatException(&#39;Invalid media type for &quot;$id&quot;.&#39;),
+    );
+    final sourceType = MediaSourceType.values.firstWhere(
+      (value) =&gt; value.name == data[&#39;sourceType&#39;],
+      orElse: () =&gt;
+          throw FormatException(&#39;Invalid media source type for &quot;$id&quot;.&#39;),
+    );
+
+    return MediaItem(
+      id: id,
+      title: _requiredString(data, &#39;title&#39;, id),
+      creator: _requiredString(data, &#39;creator&#39;, id),
+      type: type,
+      description: data[&#39;description&#39;] as String? ?? &#39;&#39;,
+      category: data[&#39;category&#39;] as String? ?? &#39;&#39;,
+      sourceType: sourceType,
+      mediaUrl: _requiredString(data, &#39;mediaUrl&#39;, id),
+      thumbnailUrl: data[&#39;thumbnailUrl&#39;] as String? ?? &#39;&#39;,
+      createdAt: _dateTime(data[&#39;createdAt&#39;]),
+      updatedAt: _dateTime(data[&#39;updatedAt&#39;]),
+    );
+  }
+
+  Map&lt;String, Object?&gt; toMap() =&gt; {
+    &#39;title&#39;: title.trim(),
+    &#39;creator&#39;: creator.trim(),
+    &#39;type&#39;: type.name,
+    &#39;description&#39;: description.trim(),
+    &#39;category&#39;: category.trim(),
+    &#39;sourceType&#39;: sourceType.name,
+    &#39;mediaUrl&#39;: mediaUrl.trim(),
+    &#39;thumbnailUrl&#39;: thumbnailUrl.trim(),
+    if (createdAt != null) &#39;createdAt&#39;: Timestamp.fromDate(createdAt!),
+    if (updatedAt != null) &#39;updatedAt&#39;: Timestamp.fromDate(updatedAt!),
+  };
+
+  static String _requiredString(
+    Map&lt;String, dynamic&gt; data,
+    String field,</code></pre></figure>
+<h2>Tahap 3 — Menghubungkan Cloud Library dengan Firestore</h2>
+<p>Cloud Library menggunakan <code>FirestoreMediaRepository</code> untuk membaca koleksi root <code>songs</code> dan menjalankan CRUD metadata. Stream Firestore menjaga daftar pada layar tetap mengikuti perubahan yang diterima aplikasi. Formulir media menangani tambah maupun edit; halaman daftar dan detail menyediakan akses ke item yang dipilih. File media sendiri tidak diunggah ke Firestore Storage oleh aplikasi.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 3. Operasi Cloud Library pada koleksi songs</strong><br><code>lib/media/firestore_media_repository.dart</code></figcaption><p>Repository menyediakan stream data serta operasi tambah, ubah, dan hapus.</p><pre><code>      _firestore.collection(&#39;songs&#39;);
+
+  @override
+  Stream&lt;List&lt;MediaItem&gt;&gt; watchItems() =&gt; _songsCollection
+      .orderBy(&#39;updatedAt&#39;, descending: true)
+      .snapshots()
+      .map(
+        (snapshot) =&gt;
+            snapshot.docs.map(MediaItem.fromFirestore).toList(growable: false),
+      );
+
+  @override
+  Future&lt;void&gt; create(MediaItem item) async {
+    final data = item.toMap()
+      ..[&#39;createdAt&#39;] = FieldValue.serverTimestamp()
+      ..[&#39;updatedAt&#39;] = FieldValue.serverTimestamp();
+    await _songsCollection.add(data);
+  }
+
+  @override
+  Future&lt;void&gt; update(MediaItem item) async {
+    final data = item.toMap()
+      ..remove(&#39;createdAt&#39;)
+      ..[&#39;updatedAt&#39;] = FieldValue.serverTimestamp();
+    await _songsCollection.doc(item.id).update(data);
+  }
+
+  @override
+  Future&lt;void&gt; delete(String documentId) async {
+    await _songsCollection.doc(documentId).delete();
+  }
+}</code></pre></figure>
+<h2>Tahap 4 — Membuat fitur CRUD Users</h2>
+<p>Halaman CRUD Users membaca, menambah, mengubah, serta menghapus dokumen pada koleksi root <code>users</code>. Formulir menggunakan field <code>nama</code>, <code>email</code>, dan <code>kelas</code>. Penamaan <code>nama</code> harus sama persis dengan nama field pada dokumen Firestore; sebelumnya ketidaksesuaian dengan field <code>name</code> menyebabkan data gagal dipetakan dengan benar.</p>
+<p>Model mempertahankan record dengan field yang kosong atau salah tipe, lalu menandainya agar dapat diperbaiki pengguna. Waktu pembuatan dan perubahan dicatat memakai server timestamp.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 4. Pemetaan data users</strong><br><code>lib/users/user_record.dart</code></figcaption><p>Nama field Firestore yang digunakan adalah nama, email, dan kelas. Field yang tidak valid ditandai untuk diperbaiki.</p><pre><code>  factory UserRecord.fromMap(String id, Map&lt;String, dynamic&gt; data) {
+    final invalidFields = &lt;String&gt;{};
+
+    String readRequiredString(String field) {
+      final value = data[field];
+      if (value is! String || value.trim().isEmpty) {
+        invalidFields.add(field);
+        return &#39;&#39;;
+      }
+      return value.trim();
+    }
+
+    return UserRecord(
+      id: id,
+      nama: readRequiredString(&#39;nama&#39;),
+      email: readRequiredString(&#39;email&#39;),
+      kelas: readRequiredString(&#39;kelas&#39;),
+      invalidFields: Set.unmodifiable(invalidFields),
+      createdAt: _dateTime(data[&#39;createdAt&#39;]),
+      updatedAt: _dateTime(data[&#39;updatedAt&#39;]),
+    );
+  }
+
+  static DateTime? _dateTime(Object? value) =&gt; switch (value) {
+    Timestamp timestamp =&gt; timestamp.toDate(),</code></pre></figure>
+<figure class='code-figure'><figcaption><strong>Cuplikan 5. Operasi CRUD pada koleksi users</strong><br><code>lib/users/firestore_users_repository.dart</code></figcaption><p>Repository memakai nama koleksi users, timestamp server, dan ID dokumen untuk perubahan.</p><pre><code>      _firestore.collection(&#39;users&#39;);
+
+  @override
+  Stream&lt;List&lt;UserRecord&gt;&gt; watchUsers() =&gt;
+      _usersCollection.snapshots().map((snapshot) {
+        final users = snapshot.docs
+            .map(UserRecord.fromFirestore)
+            .toList(growable: true);
+        users.sort((a, b) {
+          final aTime = a.updatedAt ?? a.createdAt;
+          final bTime = b.updatedAt ?? b.createdAt;
+          if (aTime == null) return bTime == null ? 0 : 1;
+          if (bTime == null) return -1;
+          return bTime.compareTo(aTime);
+        });
+        return List&lt;UserRecord&gt;.unmodifiable(users);
+      });
+
+  @override
+  Future&lt;void&gt; create(UserRecord user) async {
+    await _usersCollection.add({
+      &#39;nama&#39;: user.nama.trim(),
+      &#39;email&#39;: user.email.trim(),
+      &#39;kelas&#39;: user.kelas.trim(),
+      &#39;createdAt&#39;: FieldValue.serverTimestamp(),
+      &#39;updatedAt&#39;: FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future&lt;void&gt; update(UserRecord user) async {
+    await _usersCollection.doc(user.id).update({
+      &#39;nama&#39;: user.nama.trim(),
+      &#39;email&#39;: user.email.trim(),
+      &#39;kelas&#39;: user.kelas.trim(),
+      // Remove the legacy anonymous owner field from existing documents.
+      &#39;ownerUid&#39;: FieldValue.delete(),
+      &#39;updatedAt&#39;: FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future&lt;void&gt; delete(String documentId) async {
+    await _usersCollection.doc(documentId).delete();
+  }
+}</code></pre></figure>
+<h2>Tahap 5 — Menambahkan pemutar audio dan video</h2>
+<p>Player audio memilih <code>setAsset</code> untuk media bundel dan <code>setUrl</code> untuk media network atau URI perangkat. Player video menggunakan controller sesuai sumber, menyediakan pengelolaan lifecycle, penanganan error, kontrol playback, dan mode layar penuh.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 6. Memuat audio sesuai sumber</strong><br><code>lib/player/audio_player_screen.dart</code></figcaption><p>Audio dari URL/perangkat menggunakan setUrl; audio bundel menggunakan setAsset.</p><pre><code>  Future&lt;void&gt; _loadMedia() async {
+    if (mounted) setState(() =&gt; _error = null);
+    try {
+      if (widget.item.sourceType == MediaSourceType.network ||
+          widget.item.sourceType == MediaSourceType.device) {
+        await _player.setUrl(widget.item.mediaUrl);
+      } else {
+        await _player.setAsset(widget.item.mediaUrl);
+      }
+    } catch (error) {
+      if (mounted) setState(() =&gt; _error = &#39;Unable to load audio: $error&#39;);
+    }
+  }
+
+  Future&lt;void&gt; _togglePlayback() async {
+    try {</code></pre></figure>
+<figure class='code-figure'><figcaption><strong>Cuplikan 7. Memilih sumber pemutar video</strong><br><code>lib/player/video_player_screen.dart</code></figcaption><p>Controller dipilih menurut sourceType: aset, URI perangkat, atau URL network.</p><pre><code>  Future&lt;void&gt; _loadVideo() async {
+    final loadId = ++_loadId;
+    final old = _controller;
+    _controller = null;
+    if (old != null) {
+      old.removeListener(_onVideoUpdate);
+      await old.dispose();
+    }
+    if (!mounted || loadId != _loadId) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final controller = switch (widget.sourceType) {
+        MediaSourceType.asset =&gt; VideoPlayerController.asset(widget.mediaUrl),
+        MediaSourceType.device =&gt; VideoPlayerController.contentUri(
+          Uri.parse(widget.mediaUrl),
+        ),
+        MediaSourceType.network =&gt; VideoPlayerController.networkUrl(
+          Uri.parse(widget.mediaUrl),
+        ),
+      };
+      _controller = controller;
+      await controller.initialize();
+      if (!mounted || loadId != _loadId) return;
+      controller.addListener(_onVideoUpdate);
+      setState(() =&gt; _loading = false);
+    } catch (error) {
+      if (mounted &amp;&amp; loadId == _loadId) {
+        setState(() {
+          _loading = false;
+          _error = &#39;Could not open ${widget.sourceType.name} video: $error&#39;;</code></pre></figure>
+<h2>Tahap 6 — Mengakses media perangkat dan layanan YouTube</h2>
+<p>Pemindaian media perangkat meminta izin yang sesuai dengan tipe audio atau video, membaca MediaStore secara berhalaman, lalu mengubah hasilnya menjadi <code>MediaItem</code>. Video YouTube menggunakan player tersendiri; URL YouTube divalidasi sebelum ID video dikirim ke player.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 8. Membaca media perangkat</strong><br><code>lib/media/device_media_repository.dart</code></figcaption><p>Aplikasi meminta izin, membaca MediaStore secara bertahap, dan membentuk MediaItem.</p><pre><code>  Future&lt;DeviceMediaResult&gt; load(MediaType type) async {
+    if (!Platform.isAndroid) return const DeviceMediaResult(items: []);
+    final requestType = type == MediaType.audio
+        ? RequestType.audio
+        : RequestType.video;
+    final permission = await PhotoManager.requestPermissionExtend(
+      requestOption: PermissionRequestOption(
+        androidPermission: AndroidPermission(
+          type: requestType,
+          mediaLocation: false,
+        ),
+      ),
+    );
+    if (permission != PermissionState.authorized &amp;&amp;
+        permission != PermissionState.limited) {
+      return const DeviceMediaResult(items: [], permissionDenied: true);
+    }
+
+    final paths = await PhotoManager.getAssetPathList(
+      type: requestType,
+      onlyAll: true,
+    );
+    if (paths.isEmpty) return const DeviceMediaResult(items: []);
+    final items = &lt;MediaItem&gt;[];
+    const pageSize = 100;
+    for (var page = 0; ; page++) {
+      final assets = await paths.first.getAssetListPaged(
+        page: page,
+        size: pageSize,
+      );
+      for (final asset in assets) {
+        final title = asset.title?.trim();
+        items.add(
+          MediaItem(</code></pre></figure>
+<figure class='code-figure'><figcaption><strong>Cuplikan 10. Validasi URL YouTube</strong><br><code>lib/player/youtube_video_id.dart</code></figcaption><p>URL dibatasi ke HTTPS dan host YouTube sebelum ID video diteruskan ke player.</p><pre><code>import &#39;package:youtube_player_flutter/youtube_player_flutter.dart&#39;;
+
+/// Only accept HTTPS YouTube links; the iframe package extracts the video ID.
+String? youtubeVideoId(String input) {
+  final uri = Uri.tryParse(input.trim());
+  if (uri == null ||
+      uri.scheme != &#39;https&#39; ||
+      uri.userInfo.isNotEmpty ||
+      uri.hasPort) {
+    return null;
+  }
+  if (!{
+    &#39;youtube.com&#39;,
+    &#39;www.youtube.com&#39;,
+    &#39;m.youtube.com&#39;,
+    &#39;youtu.be&#39;,
+  }.contains(uri.host.toLowerCase())) {
+    return null;
+  }
+  final id = YoutubePlayerController.convertUrlToId(uri.toString());</code></pre></figure>
+<h2>Tahap 7 — Menambahkan pencarian dan navigasi fitur</h2>
+<p>Search memfilter katalog bundel menurut judul, kreator, dan kategori. Layar Home, Audio, Video, Library, Profile, dan Search menjadi pintu masuk fitur, sedangkan <code>media_navigation.dart</code> menghubungkan kartu media dengan player yang sesuai.</p>
+<figure class='code-figure'><figcaption><strong>Cuplikan 9. Pencarian katalog</strong><br><code>lib/search/search_screen.dart</code></figcaption><p>Kueri disaring berdasarkan judul, kreator, dan kategori.</p><pre><code>  Widget build(BuildContext context) {
+    final query = _query.trim().toLowerCase();
+    final results = demoMediaItems.where((item) {
+      return item.title.toLowerCase().contains(query) ||
+          item.creator.toLowerCase().contains(query) ||
+          item.category.toLowerCase().contains(query);
+    }).toList();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text(&#39;Search&#39;)),
+      body: Column(
+        children: [
+          Padding(</code></pre></figure>
+
+<h1>Hasil dan Pembahasan</h1>
+<h2>Modul dan tanggung jawab source code</h2>
+<p>Seluruh modul aplikasi berada di dalam direktori <code>lib/</code>. Tabel berikut mencantumkan nama file dan fungsi utamanya. Cuplikan pada tiap tahap di atas diambil dari file sumber terkait dan hanya menunjukkan bagian kode yang menjelaskan fungsi yang dibahas.</p>
+<table class="file-inventory">
+<tr><th>Nama file</th><th>Fungsi</th></tr>
+<tr><td>lib/main.dart</td><td>Entrypoint, tema, bootstrap Firebase, repository, dan navigasi utama.</td></tr>
+<tr><td>lib/home/home_screen.dart</td><td>Beranda dan pintasan ke fitur aplikasi.</td></tr>
+<tr><td>lib/audio/audio_screen.dart</td><td>Halaman katalog dan akses pemutaran audio.</td></tr>
+<tr><td>lib/audio/network_audio_form_screen.dart</td><td>Form input URL audio network.</td></tr>
+<tr><td>lib/video/video_screen.dart</td><td>Halaman video, akses video lokal, YouTube, dan pemindaian perangkat.</td></tr>
+<tr><td>lib/library/library_screen.dart</td><td>Library media bundel dan navigasi ke Cloud Library.</td></tr>
+<tr><td>lib/library/cloud_library_screen.dart</td><td>Daftar Cloud Library, state loading/error/kosong, dan navigasi CRUD.</td></tr>
+<tr><td>lib/media/media_item.dart</td><td>Model media, konversi data Firestore, tipe, dan sumber media.</td></tr>
+<tr><td>lib/media/media_catalog.dart</td><td>Daftar media audio/video yang dibundel dalam aplikasi.</td></tr>
+<tr><td>lib/media/media_repository.dart</td><td>Kontrak repository untuk membaca dan mengubah media.</td></tr>
+<tr><td>lib/media/firestore_media_repository.dart</td><td>Akses CRUD dan stream koleksi Firestore songs.</td></tr>
+<tr><td>lib/media/device_media_repository.dart</td><td>Izin dan pemindaian media Android melalui MediaStore.</td></tr>
+<tr><td>lib/media/device_media_section.dart</td><td>UI pemindaian, pemuatan, dan pemilihan media perangkat.</td></tr>
+<tr><td>lib/media/media_form_screen.dart</td><td>Formulir tambah dan edit metadata media.</td></tr>
+<tr><td>lib/media/media_detail_screen.dart</td><td>Detail media serta tindakan untuk item.</td></tr>
+<tr><td>lib/media/media_navigation.dart</td><td>Navigasi kartu media ke player sesuai tipe dan sumber.</td></tr>
+<tr><td>lib/player/audio_player_screen.dart</td><td>Pemutar audio aset, network, dan perangkat.</td></tr>
+<tr><td>lib/player/video_player_screen.dart</td><td>Pemutar video aset, network, dan perangkat.</td></tr>
+<tr><td>lib/player/youtube_player_screen.dart</td><td>Form URL serta pemutar video YouTube.</td></tr>
+<tr><td>lib/player/youtube_video_id.dart</td><td>Validasi URL dan ekstraksi ID video YouTube.</td></tr>
+<tr><td>lib/search/search_screen.dart</td><td>Pencarian judul, kreator, dan kategori katalog media.</td></tr>
+<tr><td>lib/profile/profile_screen.dart</td><td>Profil pengembang dan tautan sosial.</td></tr>
+<tr><td>lib/users/user_record.dart</td><td>Model users, pembacaan field, dan penandaan data tidak valid.</td></tr>
+<tr><td>lib/users/users_repository.dart</td><td>Kontrak akses data CRUD Users.</td></tr>
+<tr><td>lib/users/firestore_users_repository.dart</td><td>Akses CRUD dan stream koleksi Firestore users.</td></tr>
+<tr><td>lib/users/user_form_screen.dart</td><td>Form tambah/edit serta validasi input users.</td></tr>
+<tr><td>lib/users/users_screen.dart</td><td>Daftar, status error/kosong, aksi edit, dan konfirmasi hapus users.</td></tr>
+</table>
+
+<h2>Struktur data Firestore</h2>
+<table>
+<tr><th>Koleksi</th><th>Field yang digunakan aplikasi</th><th>Keterangan</th></tr>
+<tr><td>songs</td><td>title, creator, type, description, category, sourceType, mediaUrl, thumbnailUrl, createdAt, updatedAt</td><td>Metadata media Cloud Library; mediaUrl menunjuk aset yang tersedia atau URL media.</td></tr>
+<tr><td>users</td><td>nama, email, kelas, createdAt, updatedAt</td><td>Data CRUD Users bersama. Field nama ditulis tepat sebagai nama.</td></tr>
+<tr><td>playlist</td><td>Belum ditentukan oleh antarmuka aplikasi.</td><td>Koleksi dicakup rules, tetapi belum memiliki halaman dan schema aplikasi.</td></tr>
+</table>
+<p>Field inti songs memakai string untuk judul, kreator, jenis media, sumber, dan URL media; timestamp mencatat waktu dokumen. Koleksi users memakai string untuk nama, email, dan kelas beserta timestamp. ID dokumen Firestore digunakan untuk operasi edit dan hapus.</p>
+<div class="warn"><strong>Konfigurasi akses Firestore:</strong> Aplikasi tidak menggunakan Firebase Authentication. Berdasarkan konfigurasi yang dipilih, client dapat mengakses data bersama tanpa login sesuai koleksi yang diizinkan Firestore Rules. Rules perlu diterapkan melalui Firebase Console. Hindari menyimpan data sensitif pada koleksi publik.</div>
+<p>Pengguna mengonfirmasi koneksi Firestore dan CRUD telah berjalan pada konfigurasi project saat ini. Project Firebase yang dicatat pada konfigurasi aplikasi adalah <code>mediahubs-bbf06</code>; application ID Android <code>com.mediahubs.uts0035</code>.</p>
+
+<h2>Media bundel, perangkat, dan Android</h2>
+<p>Media audio dan video contoh disertakan sebagai asset aplikasi, termasuk <code>assets/video/rude_mv.mp4</code>. Audio/video yang berada di perangkat pengguna dibaca lokal dan tidak disalin, dihapus, atau diunggah aplikasi. Media network memerlukan URL yang dapat diakses oleh player; URL halaman YouTube diproses pada player YouTube khusus.</p>
+<p>Aplikasi mendeklarasikan akses internet dan izin Android untuk media audio/video, termasuk jalur akses terbatas pada Android baru dan kompatibilitas versi lebih lama. Izin diminta ketika fitur pemindaian media digunakan.</p>
+
+<h2>Konfigurasi proyek</h2>
+<ol>
+<li>Daftarkan aplikasi Android dengan application ID <code>com.mediahubs.uts0035</code> pada Firebase project yang digunakan.</li>
+<li>Letakkan file <code>google-services.json</code> yang sesuai pada <code>android/app/</code> dan aktifkan Cloud Firestore.</li>
+<li>Tinjau dan terapkan <code>docs/firestore.rules.example</code> melalui Firebase Console sesuai kebutuhan database.</li>
+<li>Pastikan aset di direktori <code>assets/</code> terdaftar pada <code>pubspec.yaml</code>.</li>
+<li>Jalankan aplikasi dengan <code>flutter pub get</code>, pilih perangkat Android, lalu <code>flutter run</code>. Paket rilis dapat dibuat melalui <code>flutter build apk --release</code>.</li>
+</ol>
+<p>APK release Flutter berada di <code>build/app/outputs/flutter-apk/app-release.apk</code>.</p>
+<h2>Hak aset dan batasan fitur</h2>
+<p>Media metadata tersimpan di Firestore, sedangkan biner media tidak memakai Firebase Storage. Pencarian saat ini mencakup katalog bundel. Koleksi playlist memiliki akses pada Rules tetapi belum mempunyai antarmuka dan model data dalam aplikasi. Pastikan hak penggunaan MP3, MP4, logo, dan gambar sebelum distribusi; rincian dependency serta lisensi dicatat pada <code>LICENSES.md</code>.</p>
+<p>Dokumen teknis terkait meliputi <code>docs/PRD.md</code>, <code>docs/IMPLEMENTATION.md</code>, dan <code>docs/firestore.rules.example</code>.</p>
+
+<h1>Kesimpulan</h1>
+<p>MediaHub merupakan aplikasi Android berbasis Flutter yang menggabungkan katalog audio/video, pemutar media, pemindaian media perangkat, pencarian katalog, dan manajemen metadata berbasis Cloud Firestore. Pemisahan layar, model, repository, dan player membantu tiap fitur memiliki tanggung jawab yang jelas.</p>
+<p>Dokumentasi ini mengikuti tahapan laporan proyek, merangkum fungsi seluruh 27 file Dart, serta menyertakan cuplikan kode yang berkaitan langsung dengan fungsi dan nama file asalnya.</p>
+</body>
+</html>
