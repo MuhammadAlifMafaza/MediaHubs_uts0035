@@ -39,17 +39,7 @@ class VideoScreen extends StatelessWidget {
         children: [
           Text('Watch', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 8),
-          const Text('Offline video and YouTube in their own players.'),
-          const SizedBox(height: 20),
-          Text(
-            'Available offline',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          for (final item in videos) PlayableMediaCard(item: item),
-          const SizedBox(height: 20),
-          if (scanDevice)
-            DeviceMediaSection(type: MediaType.video, repository: deviceMedia),
+          const Text('YouTube and offline videos in their own players.'),
           const SizedBox(height: 20),
           Text(
             'YouTube · online',
@@ -76,6 +66,16 @@ class VideoScreen extends StatelessWidget {
             icon: const Icon(Icons.link),
             label: const Text('Use another YouTube URL'),
           ),
+          const SizedBox(height: 20),
+          Text(
+            'Available offline',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          for (final item in videos) PlayableMediaCard(item: item),
+          const SizedBox(height: 20),
+          if (scanDevice)
+            DeviceMediaSection(type: MediaType.video, repository: deviceMedia),
         ],
       ),
     );

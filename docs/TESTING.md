@@ -1,10 +1,24 @@
 # Testing Record
 
+## Users CRUD and video screen updates (27 November 2026)
+
+| Check | Result | Limit |
+|---|---|---|
+| Video asset path | Renamed to `assets/video/rude_mv.mp4`; pubspec and catalogue updated | Android playback not yet tested. |
+| Video tab ordering | YouTube section moved above offline and device video sections | UI test/build pending. |
+| Users CRUD | Added separate root `users` CRUD UI/repository and a per-owner Rules example | Live Firestore access and Rules have not been verified or deployed. |
+| `dart format` | Pass | Formatted changed Dart files; final format check reported no changes. |
+| `flutter analyze` | Pass | No issues found from the temporary `M:` path mapping. |
+| Focused video ordering widget test | Pass | The Video tab test confirms YouTube appears above offline video. |
+| `flutter test --concurrency=1` | Partial | New Users CRUD widget test passed. Overall run had 10 passes and one failure in the existing Cloud Library CRUD widget test, where the Details screen action was not tappable in the 800×600 test viewport. Other tests passed in that run. |
+| Android build / device playback | Not Run | Build was not attempted after these edits. Asset codec and playback remain unverified on Android. `ffprobe` is unavailable in this environment. |
+| Live Firestore users CRUD | Not Run | No remote rules were deployed. Enable Anonymous Authentication and review the `users` rules example before testing. |
+
 ## Local video asset audit (27 November 2026)
 
 | Check | Actual result | Limit |
 |---|---|---|
-| Physical asset and catalog path | Match | Both resolve to `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`; a previous widget assertion expected an obsolete ASCII name and was corrected. |
+| Physical asset and catalog path | Updated | The previous Unicode filename has since been renamed to `assets/video/rude_mv.mp4`; the catalog, pubspec asset directory, and widget assertion use the simplified path. |
 | Asset declaration | Updated | `pubspec.yaml` now declares the exact MP4 path explicitly. A fresh asset bundle has not been produced. |
 | MP4 container markers | Inspected | H.264 AVC configuration reports Main Profile, Level 3.1; AAC `esds` marker exists; `moov` precedes `mdat`. This is a static file inspection, not proof of Android decoder playback. |
 | Device playback | Not Run | Flutter build timed out and the Android Gradle wrapper is absent, so there is no fresh APK to test. |
@@ -146,12 +160,12 @@ On 14 November 2026, after explicit user request:
 | TC-03 | Blocked | CRUD withheld pending Firebase security/schema approval. |
 | TC-04 | Not Run | Required-title validation is implemented in the gated form; not tested. |
 | TC-05 | Blocked | CRUD withheld pending Firebase security/schema approval. |
-| TC-06 | Blocked | Delete confirmation UI not implemented. |
+| TC-06 | Not Run | Delete confirmation dialog is implemented in `lib/media/media_detail_screen.dart`; cancellation behavior still needs testing. |
 | TC-07 | Blocked | CRUD withheld pending Firebase security/schema approval. |
 | TC-08 | Not Run | Direct HTTPS network-audio player is implemented; playback has not been tested. |
 | TC-09 | Not Run | Network URL validation and playback error UI are implemented; not tested. |
 | TC-10 | Not Run | One existing MP4 is referenced by the catalogue; device playback not observed. Redistribution rights unverified. |
-| TC-11 | Blocked | Firestore connectivity/error state not implemented. |
+| TC-11 | Blocked | Firestore connectivity behavior requires Firebase Console setup and a device/network test. |
 | TC-12 | Not Run | Existing video asset has not been tested offline. |
 
 Other observations: bundled asset audio was displayed playing on-device, but TC-08 is specifically **network** audio and remains Not Run. Screenshot evidence was inspected in the approved local temporary directory; no screenshot was fabricated or added to the repository.

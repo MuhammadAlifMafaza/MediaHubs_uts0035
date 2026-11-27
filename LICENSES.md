@@ -10,7 +10,7 @@ No project-level `LICENSE` file is present. The reuse and redistribution terms f
 
 | File or group | Material | Rights status in this repository |
 |---|---|---|
-| `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4` | Hearts2Hearts music video | Copyright and redistribution permission are not documented. Do not redistribute the MP4 or an APK containing it until permission is confirmed. |
+| `assets/video/rude_mv.mp4` | Hearts2Hearts music video | Copyright and redistribution permission are not documented. Do not redistribute the MP4 or an APK containing it until permission is confirmed. |
 | `assets/music/*.mp3` | Hearts2Hearts tracks | Copyright and redistribution permission are not documented. Do not redistribute these tracks until permission is confirmed. |
 | `assets/images/profile.jpeg` | Profile photograph | Creator, source, and redistribution terms are not documented. |
 | `assets/images/logo/*` and Android launcher/splash images | MediaHub branding artwork | Creator and reuse terms are not documented in this repository. |

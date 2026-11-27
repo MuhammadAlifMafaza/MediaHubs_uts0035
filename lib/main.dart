@@ -8,6 +8,9 @@ import 'audio/audio_screen.dart';
 import 'library/library_screen.dart';
 import 'media/device_media_repository.dart';
 import 'profile/profile_screen.dart';
+import 'users/firestore_users_repository.dart';
+import 'users/users_repository.dart';
+import 'users/users_screen.dart';
 import 'video/video_screen.dart';
 
 void main() => runApp(const MediaHubApp());
@@ -18,11 +21,13 @@ class MediaHubApp extends StatelessWidget {
     this.firebaseInitialization,
     this.deviceMedia,
     this.mediaRepository,
+    this.usersRepository,
   });
 
   final Future<String>? firebaseInitialization;
   final DeviceMediaRepository? deviceMedia;
   final MediaRepository? mediaRepository;
+  final UsersRepository? usersRepository;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -44,6 +49,7 @@ class MediaHubApp extends StatelessWidget {
       initialization: firebaseInitialization,
       deviceMedia: deviceMedia ?? const PhotoManagerDeviceMediaRepository(),
       mediaRepository: mediaRepository,
+      usersRepository: usersRepository,
     ),
   );
 }
@@ -53,11 +59,13 @@ class _FirebaseBootstrapScreen extends StatefulWidget {
     this.initialization,
     required this.deviceMedia,
     this.mediaRepository,
+    this.usersRepository,
   });
 
   final Future<String>? initialization;
   final DeviceMediaRepository deviceMedia;
   final MediaRepository? mediaRepository;
+  final UsersRepository? usersRepository;
 
   @override
   State<_FirebaseBootstrapScreen> createState() =>
@@ -105,10 +113,16 @@ class _FirebaseBootstrapScreenState extends State<_FirebaseBootstrapScreen> {
           (firebaseStatus.startsWith('Firebase initialized')
               ? _resolvedRepository ??= FirestoreMediaRepository()
               : null);
+      final usersRepository =
+          widget.usersRepository ??
+          (firebaseStatus.startsWith('Firebase initialized')
+              ? FirestoreUsersRepository()
+              : null);
       return _MainNavigation(
         firebaseStatus: firebaseStatus,
         deviceMedia: widget.deviceMedia,
         mediaRepository: repository,
+        usersRepository: usersRepository,
       );
     },
   );
@@ -119,11 +133,13 @@ class _MainNavigation extends StatefulWidget {
     required this.firebaseStatus,
     required this.deviceMedia,
     required this.mediaRepository,
+    required this.usersRepository,
   });
 
   final String firebaseStatus;
   final DeviceMediaRepository deviceMedia;
   final MediaRepository? mediaRepository;
+  final UsersRepository? usersRepository;
 
   @override
   State<_MainNavigation> createState() => _MainNavigationState();
@@ -140,6 +156,11 @@ class _MainNavigationState extends State<_MainNavigation> {
         onOpenLibrary: () => setState(() => _selectedIndex = 3),
         onOpenAudio: () => setState(() => _selectedIndex = 1),
         onOpenVideo: () => setState(() => _selectedIndex = 2),
+        onOpenUsers: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => UsersScreen(repository: widget.usersRepository),
+          ),
+        ),
       ),
       AudioScreen(
         deviceMedia: widget.deviceMedia,

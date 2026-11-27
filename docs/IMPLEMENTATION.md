@@ -7,10 +7,11 @@
 - `lib/main.dart`: app entry point, dark blue/green Material 3 theme, logo during Firebase bootstrap, and Home/Audio/Video/Library/Profile navigation.
 - `lib/home/`, `lib/audio/`, `lib/video/`, `lib/search/`, `lib/library/`, `lib/profile/`: separate screens; Search opens from app bars; Library shows bundled media and a cloud setup gate.
 - `lib/media/`: metadata model/catalog, Firestore repository, direct-to-player navigation, cloud create/edit form, and details with delete confirmation.
+- `lib/users/`: independent classroom CRUD for root Firestore `users` records (`nama`, `email`, `kelas`), scoped to the current anonymous UID via `ownerUid`; it is not connected to the media Library or Firebase account management.
 - `lib/player/`: audio, asset/network video, and dedicated YouTube URL/player screens (iframe-backed `youtube_player_flutter` 10.0.1).
 - `android/app/src/main/res/`: generated launcher icons and pre-Android-12 / Android-12+ native logo splash resources derived from the supplied logo.
 - `assets/music/`: five MP3 files currently present and referenced by the demo catalogue.
-- `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`: bundled MP4; file signatures contain `ftyp`, `avc1`, and `mp4a` (H.264 Main Profile, Level 3.1 and AAC marker). Codec compatibility and offline playback remain unverified on Android.
+- `assets/video/rude_mv.mp4`: bundled MP4 with a simplified asset path. Android playback remains unverified; renaming the file does not by itself establish codec compatibility.
 - `pubspec.yaml`: Firebase, `just_audio`, `video_player`, `youtube_player_flutter`, `url_launcher`, `font_awesome_flutter` and bundled asset directories. Dependencies resolved on 14 November 2026.
 - `android/app/google-services.json`: exists locally; its presence does not verify Firestore, Authentication, rules, or runtime connectivity.
 
@@ -22,11 +23,12 @@
 - Video playback uses `VideoPlayerController.asset(item.mediaUrl)`, with loading/error/retry/full-screen controls and controller disposal. An earlier device report showed the generic video-unavailable message; the new player preserves the actual exception for diagnosis. Offline playback must still be tested on Android.
 - Firestore repository code uses Anonymous Auth and the per-user `users/{uid}/media/{mediaId}` path. Firebase Console Rules and Anonymous provider are not verified or deployed; cloud operations can be denied until they are enabled. `docs/firestore.rules.example` is an example for review, not a deployed policy.
 - Cloud Library provides realtime listing, loading/empty/error states, create/edit, and delete confirmation. CRUD has not been verified against Firebase.
+- The Video tab displays its featured YouTube player section above offline videos. The root `users` CRUD and media Library use distinct screens and repositories. Firestore Rules in `docs/firestore.rules.example` include examples for both paths; no remote Rules were deployed.
 - Existing user modifications in Android/Firebase configuration, iOS project, dependency files, lockfile, and assets were present at inspection and were not reverted. No iOS target configuration was added.
 - On 14 November 2026 the user requested device validation. Analyzer, widget tests and a Gradle non-incremental debug build passed; the APK was installed and the Library was seen on SM A226B. See `docs/TESTING.md` for details and remaining gaps.
 - The Flutter package name is `mediahub` and the Android launcher label is `MediaHub`; the Firebase JSON package name was inspected and matches `com.mediahubs.uts0035`.
 - Search currently filters the bundled demo catalogue by title, creator, and category; Firestore-backed search is not connected.
-- The form accepts only registered bundled asset paths; the MP4 uses the exact Unicode path `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4` in `pubspec.yaml` and the catalogue. YouTube URLs are accepted only over HTTPS on allowlisted hosts and routed through the dedicated player, never to `video_player`. The featured/editable default is `https://youtu.be/chl0R8C4NJ8`.
+- The form accepts only registered bundled asset paths; the local MP4 path is `assets/video/rude_mv.mp4`. YouTube URLs are accepted only over HTTPS on allowlisted hosts and routed through the dedicated player, never to `video_player`. The featured/editable default is `https://youtu.be/chl0R8C4NJ8`.
 - The network audio screen accepts a user-provided direct HTTPS URL; no playable example stream URL is bundled or claimed.
 - The visual layout is inspired by familiar music-player navigation without copying Spotify branding. A persistent mini-player is P1 and was not added; current players release their controllers when leaving their screens.
 - On 15 November 2026, later retries of `flutter pub get`, `flutter analyze` and `flutter test` passed (8/8 tests). Flutter APK build failed due to Kotlin incremental cache paths across `C:`/`D:`; a retry timed out. Gradle with incremental Kotlin disabled, a 1200 MB heap, one worker and ForkJoinPool parallelism 1 produced all three debug ABI APKs. Those settings are recorded in `android/gradle.properties`; `-Psplit-per-abi=true` is still needed for split outputs via Gradle. No application was installed or run. See `docs/TESTING.md` for earlier attempts and command results.

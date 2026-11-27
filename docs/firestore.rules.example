@@ -44,9 +44,52 @@ service cloud.firestore {
             'assets/music/Hearts2Hearts_-_Style.mp3',
             'assets/music/Hearts2Hearts_-_The_Chase.mp3',
             'assets/music/Hearts2Hearts_-_FOCUS.mp3',
-            "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4"
+            'assets/video/rude_mv.mp4'
           ])
         );
+    }
+
+    function ownsUserRecord(data) {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        && data.ownerUid == request.auth.uid;
+    }
+
+    function validUserRecord(data) {
+      return data.keys().hasAll([
+          'nama', 'email', 'kelas', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'nama', 'email', 'kelas', 'ownerUid', 'createdAt', 'updatedAt'
+        ])
+        && data.nama is string
+        && data.nama.size() > 0
+        && data.nama.size() <= 120
+        && data.email is string
+        && data.email.size() > 0
+        && data.email.size() <= 254
+        && data.kelas is string
+        && data.kelas.size() > 0
+        && data.kelas.size() <= 80
+        && data.ownerUid is string
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Basic classroom CRUD records, separate from the media catalogue.
+    // Client queries must include where('ownerUid', isEqualTo: currentUid).
+    match /users/{userRecordId} {
+      allow read: if ownsUserRecord(resource.data);
+      allow create: if ownsUserRecord(request.resource.data)
+        && validUserRecord(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if ownsUserRecord(resource.data)
+        && ownsUserRecord(request.resource.data)
+        && validUserRecord(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if ownsUserRecord(resource.data);
     }
 
     match /users/{userId}/media/{mediaId} {

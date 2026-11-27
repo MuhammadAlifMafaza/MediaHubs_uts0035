@@ -1,5 +1,14 @@
 # MediaHub Progress
 
+## Users CRUD and video player update (27 November 2026)
+- **Completed:** Renamed the bundled video path to `assets/video/rude_mv.mp4`, updated the catalog/pubspec/test references, and moved the YouTube section above offline/device videos.
+- **Completed:** Added a standalone root `users` Firestore CRUD flow (`nama`, `email`, `kelas`) launched from Home. It is separate from Library/media CRUD and scopes records by anonymous `ownerUid`.
+- **Security:** Added a Rules example for the root `users` CRUD path alongside the existing media rules. No Firebase Console settings or remote Rules were changed; Anonymous Authentication and the matching Rules must still be enabled/reviewed by the project owner.
+- **Tests:** `dart format --output=none --set-exit-if-changed lib test` passed; `flutter analyze` passed; the focused Video ordering test passed. The Users CRUD widget test passed in a full run, but that full run had one failure in the existing Cloud Library detail-action test. `flutter build apk --debug` timed out after 240 seconds; no new APK is claimed.
+- **Current:** Verify local video playback and live Firestore CRUD on a device after the cloud setup is approved; diagnose the existing Cloud Library widget-test viewport failure separately.
+- **Playlist:** Existing `playlist` collection was not changed because its schema and requested operations were not specified.
+- **Rights:** The bundled music-video asset still has no documented redistribution permission; renaming did not alter its rights status.
+
 ## Repository cleanup (27 November 2026)
 - Synced the video asset assertion and current README/implementation notes with the Unicode asset filename now present in the workspace: `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`.
 - Added `/android/build/` to `.gitignore` and removed the generated Gradle HTML report from Git's index while preserving its local copy. This prevents generated build output from skewing GitHub's language statistics.

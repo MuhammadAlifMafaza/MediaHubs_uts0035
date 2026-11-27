@@ -20,17 +20,18 @@ Build per-ABI debug APKs with `flutter build apk --debug --split-per-abi` when t
 
 ## Current demo
 
-The app has Home, Audio, Video, Library and Profile navigation; Search is available from the Home/Audio/Video app bars. Tap a media item to open its player directly; the more-options menu opens Details. Audio/Video include bundled assets and automatically scanned device media when Android read permission is granted. Audio also accepts a direct HTTPS audio URL for immediate playback. The Video tab offers a dedicated YouTube player initially set to `https://youtu.be/chl0R8C4NJ8`. Library lists bundled media and provides a per-user Firestore CRUD flow after Anonymous Authentication and Rules are enabled in Firebase Console. The bundled MP4 is `assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4`. The asset path in `pubspec.yaml`, media catalog, and test now uses the same Unicode filename. **Android playback has not yet been verified on a rebuilt APK.** See `LICENSES.md` for the asset rights register before redistribution.
+The app has Home, Audio, Video, Library and Profile navigation; Search is available from the Home/Audio/Video app bars. Home also opens a separate classroom CRUD screen for the root Firestore `users` collection (`nama`, `email`, `kelas`); this is not the media Library or Firebase account management. The Video tab puts the dedicated YouTube player above bundled offline and device videos. The bundled MP4 path is `assets/video/rude_mv.mp4`. **Local video playback has not yet been verified on a rebuilt APK.** See `LICENSES.md` for the asset rights register before redistribution.
 
 Device media scanning uses `photo_manager` 3.12.0 and Android read permissions only (`READ_MEDIA_AUDIO`, `READ_MEDIA_VIDEO`, and API-specific legacy/limited permissions); it does not copy, delete, or upload the original device files. Android permission is requested when the Audio or Video tab is opened. Search currently covers bundled items only. Firebase Storage audio is deferred pending approved read rules, Firestore schema, and a real authorized audio file; no stream URL is invented.
 
 ## Firebase setup gate
 
-`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database access. The app uses invisible Anonymous Authentication and stores metadata under `users/{uid}/media/{mediaId}`. Enable Anonymous sign-in and review/apply the example in `docs/firestore.rules.example` in Firebase Console before cloud CRUD can succeed. The app does not upload audio or video files.
+`android/app/google-services.json` exists and its project ID/package match `mediahubs-bbf06` / `com.mediahubs.uts0035`; the Google Services Gradle plugin and `Firebase.initializeApp()` are present. This does **not** verify cloud database access. The media Library uses `users/{uid}/media/{mediaId}`. Classroom CRUD uses the separate root collection `users`, with records scoped by `ownerUid`; both flows require Anonymous Authentication and matching reviewed Rules. Review `docs/firestore.rules.example` before enabling cloud operations. The app does not upload audio or video files.
 
 ## UTS demo checklist
 
 - [ ] Enable Anonymous Authentication and apply reviewed per-user rules from `docs/firestore.rules.example` before Firestore CRUD.
+- [ ] Verify classroom CRUD against the root `users` collection separately from the media Library.
 - [ ] Test network audio using a direct, accessible audio URL.
 - [ ] Confirm rights for the supplied MP4 and test playback offline on Android.
 - [ ] Run the black-box cases listed in `docs/TESTING.md` on a real Android device/emulator and record evidence.

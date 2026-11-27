@@ -52,7 +52,7 @@ const demoMediaItems = [
     creator: 'Hearts2Hearts',
     type: MediaType.video,
     sourceType: MediaSourceType.asset,
-    mediaUrl: "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4",
+    mediaUrl: 'assets/video/rude_mv.mp4',
     category: 'Music Video',
   ),
 ];

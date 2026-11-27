@@ -11,12 +11,14 @@ class HomeScreen extends StatelessWidget {
     required this.onOpenLibrary,
     required this.onOpenAudio,
     required this.onOpenVideo,
+    required this.onOpenUsers,
   });
 
   final String firebaseStatus;
   final VoidCallback onOpenLibrary;
   final VoidCallback onOpenAudio;
   final VoidCallback onOpenVideo;
+  final VoidCallback onOpenUsers;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -86,6 +88,12 @@ class HomeScreen extends StatelessWidget {
           onPressed: onOpenLibrary,
           icon: const Icon(Icons.library_music),
           label: const Text('Open Library'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: onOpenUsers,
+          icon: const Icon(Icons.people_outline),
+          label: const Text('CRUD Users · Firestore'),
         ),
         const SizedBox(height: 20),
         Card(

@@ -49,7 +49,7 @@ flutter:
   assets:
     - assets/
     - assets/music/
-    - "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4"
+    - assets/video/
     - assets/images/
     - assets/images/logo/
 

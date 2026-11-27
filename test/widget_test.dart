@@ -11,6 +11,9 @@ import 'package:mediahub/media/device_media_repository.dart';
 import 'package:mediahub/media/device_media_section.dart';
 import 'package:mediahub/media/media_repository.dart';
 import 'package:mediahub/library/cloud_library_screen.dart';
+import 'package:mediahub/users/user_record.dart';
+import 'package:mediahub/users/users_repository.dart';
+import 'package:mediahub/users/users_screen.dart';
 
 class _EmptyDeviceMediaRepository implements DeviceMediaRepository {
   const _EmptyDeviceMediaRepository();
@@ -82,6 +85,54 @@ class _MemoryMediaRepository implements MediaRepository {
   Future<void> dispose() => _changes.close();
 }
 
+class _MemoryUsersRepository implements UsersRepository {
+  final _users = <UserRecord>[];
+  final _changes = StreamController<List<UserRecord>>.broadcast(sync: true);
+  var _nextId = 0;
+
+  @override
+  Stream<List<UserRecord>> watchUsers() =>
+      Stream<List<UserRecord>>.multi((sink) {
+        sink.add(List.unmodifiable(_users));
+        final subscription = _changes.stream.listen(
+          sink.add,
+          onError: sink.addError,
+        );
+        sink.onCancel = subscription.cancel;
+      });
+
+  void _publish() => _changes.add(List.unmodifiable(_users));
+
+  @override
+  Future<void> create(UserRecord user) async {
+    _users.add(
+      UserRecord(
+        id: 'user-${++_nextId}',
+        nama: user.nama,
+        email: user.email,
+        kelas: user.kelas,
+      ),
+    );
+    _publish();
+  }
+
+  @override
+  Future<void> update(UserRecord user) async {
+    final index = _users.indexWhere((existing) => existing.id == user.id);
+    if (index < 0) throw StateError('User not found.');
+    _users[index] = user;
+    _publish();
+  }
+
+  @override
+  Future<void> delete(String documentId) async {
+    _users.removeWhere((user) => user.id == documentId);
+    _publish();
+  }
+
+  Future<void> dispose() => _changes.close();
+}
+
 void main() {
   testWidgets('Cloud library creates, edits, and confirms media deletion', (
     tester,
@@ -133,6 +184,49 @@ void main() {
     await repository.dispose();
   });
 
+  testWidgets('Users CRUD is separate and supports create, edit, delete', (
+    tester,
+  ) async {
+    final repository = _MemoryUsersRepository();
+    await tester.pumpWidget(
+      MaterialApp(home: UsersScreen(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada data user.'), findsOneWidget);
+
+    await tester.tap(find.text('Tambah user pertama'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Demo User');
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'demo@example.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(2), 'SI-1');
+    await tester.tap(find.text('Simpan user'));
+    await tester.pumpAndSettle();
+    expect(find.text('Demo User'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Aksi untuk Demo User'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Updated User');
+    await tester.tap(find.text('Simpan perubahan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Updated User'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Aksi untuk Updated User'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hapus data Updated User?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Hapus'));
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada data user.'), findsOneWidget);
+
+    await repository.dispose();
+  });
+
   testWidgets('Home presents MediaHub and cloud setup status', (tester) async {
     await tester.pumpWidget(
       MediaHubApp(
@@ -180,6 +274,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('RUDE! MV'), findsOneWidget);
     expect(find.text('Featured YouTube video'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('YouTube · online')).dy,
+      lessThan(tester.getTopLeft(find.text('Available offline')).dy),
+    );
   });
 
   testWidgets('Profile contains creator details', (tester) async {
@@ -263,11 +361,11 @@ void main() {
     expect(find.text('Media access not granted'), findsOneWidget);
   });
 
-  test('Bundled video catalogue references its original Unicode asset', () {
+  test('Bundled video catalogue references its local asset', () {
     final video = demoMediaItems.singleWhere(
       (item) => item.type == MediaType.video,
     );
-    expect(video.mediaUrl, "assets/video/Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp4");
+    expect(video.mediaUrl, 'assets/video/rude_mv.mp4');
     expect(File(video.mediaUrl).existsSync(), isTrue);
   });
 }
